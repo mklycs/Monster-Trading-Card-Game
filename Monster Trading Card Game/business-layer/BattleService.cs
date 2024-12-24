@@ -35,7 +35,7 @@ namespace mtcg{
             }
 
             your_cardService.emptyDeck();
-            your_cardService.initDeck(random);
+            //your_cardService.initDeck(random);
             return 0;
         }
 

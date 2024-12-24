@@ -25,13 +25,16 @@ namespace mtcg{
             deck.Clear();
         }
 
+        /*
         public void initDeck(Random random){
             for(int i = 0; i < 4; i++){
                 int random_card = random.Next(this.stack.Count);
                 this.deck.Add(this.stack[random_card]);          // erstellt kein neues Objekt sondern Referenz
             }
         }
+        */
 
+        /*
         public void defineDeck(Validator validator){
             deck.Clear();
             Console.WriteLine("Choose 4 cards from your stack to use in your deck in battles.");
@@ -56,5 +59,6 @@ namespace mtcg{
                 }
             }
         }
+        */
     }
 }

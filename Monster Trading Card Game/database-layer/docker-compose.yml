@@ -1,0 +1,35 @@
+#version: '3.7'
+services:
+  db:
+    image: postgres:latest
+    hostname: mtcg_db_host
+    restart: always
+    environment:
+      POSTGRES_DB: mtcg_database
+      POSTGRES_USER: mtcg_admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - '5432:5432'                           # weil postgres verwendet Port 5432
+    volumes:  
+      - db_data:/var/lib/postgresql/data      # dieser Pfad, weil dor Postgres seine Daten speichert
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Benutzername für den Admin-Login in pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: admin         # Passwort für pgAdmin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - '4040:80'                             # Port 4040 muss auf Port 80 weiterleiten (Port 80 ist wichtig)
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:

@@ -9,38 +9,54 @@ using System.Xml.Linq;
 namespace mtcg{
     public class RequestHandler{
         private static RequestHandler? instance = null;
-        private RequestHandler() { }
+        private Random random = new Random();
+        //private List<User> users = new List<User>();
+        private RequestHandler(){ }
 
         public static RequestHandler getInstance(){
-            if (instance == null) instance = new RequestHandler();
+            if(instance == null) instance = new RequestHandler();
             return instance;
         }
         public string HandleRequest(string request, string httpMethod, string? jsonBody){
             Status response = new Status();
 
-            if (httpMethod == "GET") return "function to show scoreboard."; // <- Note to myself
-            if (httpMethod == "POST") return HandlePost(jsonBody, request, response);
-            if (httpMethod == "DELETE") return HandleDelete(jsonBody, request, response);
-            if (httpMethod == "PUT") return HandlePut(jsonBody, request, response);
-            if (httpMethod == "PATCH") return HandlePatch(jsonBody, request, response);
+            if(httpMethod == "GET") return HandleGet(jsonBody, request, response);// "function to show scoreboard."; // <- Note to myself
+            if(httpMethod == "POST") return HandlePost(jsonBody, request, response);
+            if(httpMethod == "DELETE") return HandleDelete(jsonBody, request, response);
+            if(httpMethod == "PUT") return HandlePut(jsonBody, request, response);
+            if(httpMethod == "PATCH") return HandlePatch(jsonBody, request, response);
 
             return "0:Unknown request.";
         }
 
-        private string HandlePost(string? jsonBody, string request, Status response){
-            if (string.IsNullOrWhiteSpace(jsonBody)) return "400:No JSON body provided.";
+        private string HandleGet(string? jsonBody, string request, Status response){
+            if(string.IsNullOrWhiteSpace(jsonBody)) return "400:No JSON body provided.";
 
-            if (request == "signup"){
+            if(request == "showScoreboard"){
+                // ...
+            }
+
+            return $"{response.statusCode}:{response.message}";
+        }
+        private string HandlePost(string? jsonBody, string request, Status response){
+            if(string.IsNullOrWhiteSpace(jsonBody)) return "400:No JSON body provided.";
+
+            if(request == "signup"){
                 var userDto = JsonSerializer.Deserialize<UserDto>(jsonBody);
-                UserController userController = new UserController(/*userDto*/);
+                UserController userController = new UserController();
                 response = userController.signup(userDto);
             }
 
-            if (request == "buyPackage"){
-                // ... 
+            if(request == "buyPackage"){
+                string authToken = getAuthToken(jsonBody);
+                CardController cardController = new CardController();
+                response = cardController.buyPackage(authToken, random);
             }
 
-            if (request == "defineDeck"){
+            if(request == "battle"){
+                // Token von Request extrahieren
+                // Anhand des Tokens den richtigen User von der User-Liste bekommen
+
                 // ... 
             }
 
@@ -48,12 +64,12 @@ namespace mtcg{
         }
 
         private string HandleDelete(string? jsonBody, string request, Status response){
-            if (string.IsNullOrWhiteSpace(jsonBody)) return "400:No JSON body provided.";
+            if(string.IsNullOrWhiteSpace(jsonBody)) return "400:No JSON body provided.";
 
             var userDto = JsonSerializer.Deserialize<UserDto>(jsonBody);
-            UserController userController = new UserController(/*userDto*/);
+            UserController userController = new UserController();
 
-            if (request == "deleteUser") response = userController.deleteUser(userDto);
+            if(request == "deleteUser") response = userController.deleteUser(userDto);
 
             return $"{response.statusCode}:{response.message}";
         }
@@ -71,7 +87,7 @@ namespace mtcg{
 
             if(request == "changeCredentials"){
                 var userDto = JsonSerializer.Deserialize<UserDto>(jsonBody);
-                UserController userController = new UserController(/*userDto*/);
+                UserController userController = new UserController();
                 response = userController.changeCredentials(userDto);
             }else if(request == "changeStats"){
                 string authToken = getAuthToken(jsonBody);
@@ -79,11 +95,11 @@ namespace mtcg{
 
             }else if(request == "logout"){
                 string authToken = getAuthToken(jsonBody);
-                UserController userController = new UserController(/*userDto*/);
+                UserController userController = new UserController();
                 response = userController.logout(authToken);
             }else if(request == "login"){
                 var userDto = JsonSerializer.Deserialize<UserDto>(jsonBody);
-                UserController userController = new UserController(/*userDto*/);
+                UserController userController = new UserController();
                 response = userController.login(userDto);
             }
 
@@ -99,12 +115,15 @@ namespace mtcg{
 
         private string getAuthToken(string jsonBody){
             string authToken = "";
-            using (JsonDocument document = JsonDocument.Parse(jsonBody)){ // ich erstelle fix nicht noch eine dto nur für 1 string
+            using(JsonDocument document = JsonDocument.Parse(jsonBody)){ // ich erstelle fix nicht noch eine dto nur für 1 string
                 JsonElement root = document.RootElement;
                 authToken = root.GetProperty("authToken").GetString();
             }
             // Console.WriteLine($"authToken: {authToken}");
             return authToken;
+        }
+        private void getUserFromList(){
+            // ...
         }
     }
 }

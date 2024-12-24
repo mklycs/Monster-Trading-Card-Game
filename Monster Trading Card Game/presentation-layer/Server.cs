@@ -7,28 +7,28 @@ namespace mtcg{
     // Diese Klasse stellt den TCP-Server dar, der auf Anfragen wartet
     public class Server{
         private static RequestHandler? _requestHandler;
-
+        
         public Server(){
             _requestHandler = RequestHandler.getInstance();
         }
 
         public string handleResponseStatus(string statusCode){
-            if (statusCode == "100") return "Continue";
-            else if (statusCode == "101") return "Switching Protocols";
-            else if (statusCode == "200") return "OK";
-            else if (statusCode == "201") return "Created";
-            else if (statusCode == "202") return "Accepted";
-            else if (statusCode == "204") return "No Content";
-            else if (statusCode == "301") return "Moved Permanently";
-            else if (statusCode == "302") return "Found";
-            else if (statusCode == "304") return "No Modified";
-            else if (statusCode == "400") return "Bad Request";
-            else if (statusCode == "401") return "Unauthorized";
-            else if (statusCode == "403") return "Forbidden";
-            else if (statusCode == "404") return "Not Found";
-            else if (statusCode == "500") return "Internal Server Error";
-            else if (statusCode == "502") return "Bad Gateway";
-            else if (statusCode == "503") return "Service Unavailable";
+            if(statusCode == "100") return "Continue";
+            else if(statusCode == "101") return "Switching Protocols";
+            else if(statusCode == "200") return "OK";
+            else if(statusCode == "201") return "Created";
+            else if(statusCode == "202") return "Accepted";
+            else if(statusCode == "204") return "No Content";
+            else if(statusCode == "301") return "Moved Permanently";
+            else if(statusCode == "302") return "Found";
+            else if(statusCode == "304") return "No Modified";
+            else if(statusCode == "400") return "Bad Request";
+            else if(statusCode == "401") return "Unauthorized";
+            else if(statusCode == "403") return "Forbidden";
+            else if(statusCode == "404") return "Not Found";
+            else if(statusCode == "500") return "Internal Server Error";
+            else if(statusCode == "502") return "Bad Gateway";
+            else if(statusCode == "503") return "Service Unavailable";
             else return "Unknown Request";
         }
 
