@@ -12,8 +12,9 @@ namespace mtcg{
         public List<A_Card> stack { get; set; } = new List<A_Card>();
         public List<A_Card> deck { get; set; } = new List<A_Card>(4);
         public string token { get; set; }
+        public bool searchingBattle { get; set; }
 
-        public User(string? username, /*string? password,*/ string token, int coins = 20, int wins = 0, int looses = 0, int elo = 100, int rating = 0){
+        public User(string? username, /*string? password,*/ string token, int coins = 20, int wins = 0, int looses = 0, int elo = 100, int rating = 0, bool searchingBattle = false){
             this.username = username;
             //this.password = password;
             this.coins = coins;       //  20
@@ -22,8 +23,10 @@ namespace mtcg{
             this.elo = elo;           // 100
             this.rating = rating;     //   0
             this.token = token;
+            this.searchingBattle = searchingBattle;
 
             this.stack = new List<A_Card>();
+            /*
             for(int i = 0; i < 2; i++){
                 this.stack.Add(new Dragon());
                 this.stack.Add(new FireElf());
@@ -36,6 +39,7 @@ namespace mtcg{
                 this.stack.Add(new Waterfall());
                 this.stack.Add(new Gale());
             }
+            */
 
             this.deck = new List<A_Card>(4);
         }

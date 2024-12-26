@@ -1,5 +1,6 @@
 ﻿// nimmt Anfragen zur Registrierung, Login und anderen Benutzeraktionen entgegen
 
+using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
 using Npgsql;
@@ -22,59 +23,85 @@ namespace mtcg{
             Validator validator = new Validator();
             string? username = validator.checkStr(3, userDto.username);
             string? password = validator.checkStr(3, userDto.password);
-            if(username == null || password == null) return false;
+
+            if(username == null || password == null) 
+                return false;
 
             return true;
         }
 
         public Status signup(UserDto userDto){
-            if(!validateCredentials(userDto)) return new Status(400, "Username or password is invalid.");
-            if(userDto.password_repeat != userDto.password) return new Status(400, "Passwords dont match.");
+            if(!validateCredentials(userDto)) 
+                return new Status(400, "Username or password is invalid.");
+
+            if(userDto.password_repeat != userDto.password) 
+                return new Status(400, "Passwords dont match.");
 
             string token = "-"; // "user is logged out"
             userDto.password = hashPassword(userDto.password);
             UserQueries userQueries = new UserQueries();
-            if (userQueries.addUser(userDto, token)) return new Status(201, "Signup succesful.");
+
+            if (userQueries.addUser(userDto, token)) 
+                return new Status(201, "Signup succesful.");
 
             return new Status(403, "User with this username already exists.");
         }
 
         public Status login(UserDto userDto){
-            if(!validateCredentials(userDto)) return new Status(400, "Username or password is invalid.");
+            if(!validateCredentials(userDto)) 
+                return new Status(400, "Username or password is invalid.");
+
             UserQueries userQueries = new UserQueries();
-            if(userQueries.isTokenSet(userDto.username)) return new Status(400, "Already logged in.");
+
+            if(userQueries.isTokenSet(userDto.username)) 
+                return new Status(400, "Already logged in.");
 
             string token = hashPassword(GenerateToken(userDto.username));
             userDto.password = hashPassword(userDto.password);
-            if(userQueries.setToken(userDto.username, token)) return new Status(200, "Login succesful.");
+
+            if(userQueries.setToken(userDto.username, token)) 
+                return new Status(200, "Login succesful.");
+
             return new Status(500, "Login failed.");
         }
 
         public Status logout(string token){
             UserQueries userQueries = new UserQueries();
-            if(!userQueries.setTokenDefault(token)) return new Status(401, "Failed to log out.");
+
+            if(!userQueries.setTokenDefault(token)) 
+                return new Status(401, "Failed to log out.");
 
             return new Status(200, "Logout succesful.");
         }
 
         public Status changeCredentials(UserDto userDto){
-            if(!validateCredentials(userDto)) return new Status(400, "Username or password is invalid.");
-            if(userDto.password_repeat != userDto.password) return new Status(400, "Passwords dont match.");
+            if(!validateCredentials(userDto)) 
+                return new Status(400, "Username or password is invalid.");
+
+            if(userDto.password_repeat != userDto.password) 
+                return new Status(400, "Passwords dont match.");
 
             userDto.password = hashPassword(userDto.password);
             UserQueries userQueries = new UserQueries();
-            if(!userQueries.updateUser(userDto)) return new Status(400, "This username is already taken.");
+
+            if(!userQueries.updateUser(userDto)) 
+                return new Status(400, "This username is already taken.");
 
             return new Status(200, "Successfully changed user credentials.");
         }
 
         public Status deleteUser(UserDto userDto){
-            if(!validateCredentials(userDto)) return new Status(400, "Username or password is invalid.");
-            if(userDto.password_repeat != userDto.password) return new Status(400, "Passwords dont match.");
+            if(!validateCredentials(userDto)) 
+                return new Status(400, "Username or password is invalid.");
+
+            if(userDto.password_repeat != userDto.password) 
+                return new Status(400, "Passwords dont match.");
 
             userDto.password = hashPassword(userDto.password);
             UserQueries userQueries = new UserQueries();
-            if(!userQueries.deleteUser(userDto)) return new Status(400, "Could not delete user: User does not exist.");
+
+            if(!userQueries.deleteUser(userDto)) 
+                return new Status(400, "Could not delete user: User does not exist.");
 
             return new Status(200, $"Successfully deleted user \"{userDto.username}\".");
         }
@@ -100,7 +127,8 @@ namespace mtcg{
             char charac;
             for(int i = 0; i < len; i++){
                 num = random.Next(65, 91);                                    // ASCII Kleinbuchstaben fangen bei 65 und Großbuchstaben fangen bei 97 an 
-                if(random.Next(0, 2) == 1) charac = Convert.ToChar(num + 32); // für upper case
+                if(random.Next(0, 2) == 1) 
+                    charac = Convert.ToChar(num + 32); // für upper case
                 else charac = Convert.ToChar(num);                            // für lower case
                 random_string += charac;
             }
@@ -114,15 +142,16 @@ namespace mtcg{
                 return Convert.ToBase64String(hash);
             }
         }
-        /*
-        public string getToken(string username){
-            UserQueries userQueries = new UserQueries();
-            return userQueries.getToken(username);
-        }
-        //*/
 
-        public void getUser(){
-            // ...
+        public User getUser(string token){
+            UserQueries userQueries = new UserQueries();
+            string username = userQueries.getUser(token).Item1;
+            int coins = userQueries.getUser(token).Item2;
+            int wins = userQueries.getUser(token).Item3;
+            int looses = userQueries.getUser(token).Item4;
+            int elo = userQueries.getUser(token).Item5;
+            int rating = userQueries.getUser(token).Item6;
+            return new User(username, token, coins, wins, looses, elo, rating);
         }
     }
 }

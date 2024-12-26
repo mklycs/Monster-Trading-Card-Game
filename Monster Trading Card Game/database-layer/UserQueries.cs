@@ -10,12 +10,12 @@ namespace mtcg{
             conn.Open();
         }
 
-        private int selectUserID(string? username){
+        private int getUserID(string? username){
             int userID = -1;
             using(var command = new NpgsqlCommand($"SELECT id FROM \"USERS\" WHERE username = @username;", conn)){
                 command.Parameters.AddWithValue("username", $"{username}");
                 using(var reader = command.ExecuteReader()){
-                    while (reader.Read()){
+                    while(reader.Read()){
                         userID = reader.GetInt32(0);
                     }
                 }
@@ -40,8 +40,10 @@ namespace mtcg{
         }
 
         public bool addUser(UserDto user, string token){
-            int userID = selectUserID(user.username);
-            if(userID != -1) return false; // wurde ein user gefunden/exisitiert wird kein neuer user hinzugefügt
+            int userID = getUserID(user.username);
+            if(userID != -1) 
+                return false; // wurde ein user gefunden/exisitiert wird kein neuer user hinzugefügt
+
             using(var command = new NpgsqlCommand($"INSERT INTO \"STATS\" (coins, wins, looses, elo, rating) VALUES (20, 0, 0, 100, 0.00);", conn))
                 command.ExecuteNonQuery();
 
@@ -52,7 +54,7 @@ namespace mtcg{
                 command.ExecuteNonQuery();
             }
 
-            userID = selectUserID(user.username);
+            userID = getUserID(user.username);
             for(int i = 1; i <= 10; i++){
                 using(var command = new NpgsqlCommand($"INSERT INTO \"STACKS\" (userid, cardid) VALUES (@userid, @cardid);", conn)){
                     command.Parameters.AddWithValue("userid", userID);
@@ -70,10 +72,11 @@ namespace mtcg{
         }
 
         public bool updateUser(UserDto user){
-            int userID = selectUserID(user.new_username);
-            if(userID != -1) return false;
+            int userID = getUserID(user.new_username);
+            if(userID != -1) 
+                return false;
 
-            userID = selectUserID(user.username);
+            userID = getUserID(user.username);
 
             using(var command = new NpgsqlCommand($"UPDATE \"USERS\" SET username = @username, password=@password WHERE id=@id;", conn)){
                 command.Parameters.AddWithValue("username", $"{user.new_username}");
@@ -85,8 +88,9 @@ namespace mtcg{
         }
 
         public bool deleteUser(UserDto user){
-            int userID = selectUserID(user.username);
-            if(userID == -1) return false; // "user wurde nicht gefunden"
+            int userID = getUserID(user.username);
+            if(userID == -1) 
+                return false; // "user wurde nicht gefunden"
 
             if(!comparePasswords(user.username, user.password)) return false;
 
@@ -138,9 +142,31 @@ namespace mtcg{
             using(var command = new NpgsqlCommand("SELECT CASE WHEN token = '-' THEN FALSE ELSE TRUE END FROM \"USERS\" WHERE username=@username;", conn)){
                 command.Parameters.AddWithValue("username", $"{username}");
                 var result = command.ExecuteScalar();
-                if(result != null && result is bool) return (bool)result;
+
+                if(result != null && result is bool) 
+                    return (bool)result;
             }
             return false;
+        }
+
+        public (string, int, int, int, int, int, int) getUser(string token){
+            int coins = 0, wins = 0, looses = 0, elo = 0, rating = 0, cardid = 0;
+            string username = "";
+            using(var command = new NpgsqlCommand($"SELECT username, coins, wins, looses, elo, rating, cardid FROM \"USERS\" users JOIN \"STATS\" stats on users.statsid = stats.id JOIN \"STACKS\" stack on users.id = stack.userid WHERE token = @token;", conn)) {
+                command.Parameters.AddWithValue("token", $"{token}");
+                using(var reader = command.ExecuteReader()) {
+                    while(reader.Read()){
+                        username = reader.GetString(0);
+                        coins = reader.GetInt32(1);
+                        wins = reader.GetInt32(2);
+                        looses = reader.GetInt32(3);
+                        elo = reader.GetInt32(4);
+                        rating = reader.GetInt32(5);
+                        cardid = reader.GetInt32(6);
+                    }
+                }
+            }
+            return (username, coins, wins, looses, elo, rating, cardid);
         }
     }
 }

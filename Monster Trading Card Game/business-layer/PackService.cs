@@ -7,24 +7,31 @@ namespace mtcg{
         public int cards_amount { get; set; } = 5;
         public PackService(){ }
 
-        public List<A_Card> unpackPack(Random random){
-            List<A_Card> pack = new List<A_Card>();
+        public string unpackPack(Random random, string token, CardQueries cardQueries){
+            string response = "";
             for(int i = 0; i < cards_amount; i++){
-                int random_num = random.Next(10);
-                if(random_num == 0) pack.Add(new Dragon());
-                else if(random_num == 1) pack.Add(new FireElf());
-                else if(random_num == 2) pack.Add(new Goblin());
-                else if(random_num == 3) pack.Add(new Knight());
-                else if(random_num == 4) pack.Add(new Kraken());
-                else if(random_num == 5) pack.Add(new Orc());
-                else if(random_num == 6) pack.Add(new Wizard());
-                else if(random_num == 7) pack.Add(new Fireball());
-                else if(random_num == 8) pack.Add(new Waterfall());
-                else if(random_num == 9) pack.Add(new Gale());
-                Console.WriteLine($"You unpacked {pack[pack.Count - 1].name} ({pack[pack.Count - 1].damage},\"{pack[pack.Count - 1].elementType}\").");
+                int random_num = random.Next(10) + 1;
+                cardQueries.addCard(random_num, token);
+                response += getCardInfo(random_num);
             }
+                
+            return response;
+        }
 
-            return pack;
+        private string getCardInfo(int index){
+            A_Card card = null;
+            if(index == 1) card = new Dragon();
+            else if(index == 2) card = new FireElf();
+            else if(index == 3) card = new Goblin();
+            else if(index == 4) card = new Knight();
+            else if(index == 5) card = new Kraken();
+            else if(index == 6) card = new Orc();
+            else if(index == 7) card = new Wizard();
+            else if(index == 8) card = new Fireball();
+            else if(index == 9) card = new Waterfall();
+            else if(index == 10) card = new Gale();
+            
+            return $"You unpacked {card.name} ({card.damage},\"{card.elementType}\").\n";
         }
     }
 }
