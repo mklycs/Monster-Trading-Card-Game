@@ -7,12 +7,12 @@ namespace mtcg{
         public int cards_amount { get; set; } = 5;
         public PackService(){ }
 
-        public string unpackPack(Random random, string token, CardQueries cardQueries){
+        public string unpackPack(Random random, int userID, CardQueries cardQueries){
             string response = "";
             for(int i = 0; i < cards_amount; i++){
-                int random_num = random.Next(10) + 1;
-                cardQueries.addCard(random_num, token);
-                response += getCardInfo(random_num);
+                int cardID = random.Next(10) + 1;
+                cardQueries.addCard(cardID, userID);
+                response += getCardInfo(cardID);
             }
                 
             return response;

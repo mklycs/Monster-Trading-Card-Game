@@ -145,12 +145,15 @@ namespace mtcg{
 
         public User getUser(string token){
             UserQueries userQueries = new UserQueries();
-            string username = userQueries.getUser(token).Item1;
-            int coins = userQueries.getUser(token).Item2;
-            int wins = userQueries.getUser(token).Item3;
-            int looses = userQueries.getUser(token).Item4;
-            int elo = userQueries.getUser(token).Item5;
-            int rating = userQueries.getUser(token).Item6;
+
+            var userInfo = userQueries.getUser(token);
+            string username = userInfo.Item1;
+            int coins = userInfo.Item2;
+            int wins = userInfo.Item3;
+            int looses = userInfo.Item4;
+            int elo = userInfo.Item5;
+            int rating = userInfo.Item6;
+
             return new User(username, token, coins, wins, looses, elo, rating);
         }
     }

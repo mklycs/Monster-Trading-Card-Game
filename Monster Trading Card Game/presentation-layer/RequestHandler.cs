@@ -65,6 +65,9 @@ namespace mtcg{
                 response = this.battle(jsonBody);
             }else if(request == "stopBattlesearch")
                 response = this.stopBattlesearch(jsonBody);
+            
+            if(request == "offerCard")
+                response = this.offerCard(jsonBody);
 
             return $"{response.statusCode}:{response.message}";
         }
@@ -76,6 +79,9 @@ namespace mtcg{
             if(request == "deleteUser")
                 response = this.deleteUser(jsonBody);
 
+            if(request == "deleteOffer")
+                response = this.deleteOffer(jsonBody);
+
             return $"{response.statusCode}:{response.message}";
         }
 
@@ -83,7 +89,7 @@ namespace mtcg{
             if(string.IsNullOrWhiteSpace(jsonBody)) 
                 return "400:No JSON body provided.";
 
-            // if(request == "jakies gowno") 
+            // if(request == "foo") 
             // ...
 
             return $"{response.statusCode}:{response.message}";
@@ -113,7 +119,7 @@ namespace mtcg{
         }
 
         private Status logout(string jsonBody){
-            string authToken = getAuthToken(jsonBody);
+            string authToken = getElementFromJson(jsonBody, "authToken");
             if(authToken == "-" || authToken.Length != 64)
                 return new Status(401, "You need to be logged in.");
 
@@ -128,7 +134,7 @@ namespace mtcg{
         }
 
         private Status deleteUser(string jsonBody){
-            string authToken = getAuthToken(jsonBody);
+            string authToken = getElementFromJson(jsonBody, "authToken");
             if(authToken == "-" || authToken.Length != 64)
                 return new Status(401, "You need to be logged in.");
 
@@ -138,7 +144,7 @@ namespace mtcg{
         }
 
         private Status changeCredentials(string jsonBody){
-            string authToken = getAuthToken(jsonBody);
+            string authToken = getElementFromJson(jsonBody, "authToken");
             if(authToken == "-" || authToken.Length != 64)
                 return new Status(401, "You need to be logged in.");
 
@@ -148,7 +154,7 @@ namespace mtcg{
         }
 
         private Status buyPackage(string jsonBody){
-            string authToken = getAuthToken(jsonBody);
+            string authToken = getElementFromJson(jsonBody, "authToken");
             if(authToken == "-" || authToken.Length != 64)
                 return new Status(401, "You need to be logged in.");
 
@@ -157,7 +163,7 @@ namespace mtcg{
         }
 
         private Status battle(string jsonBody){
-            string authToken = getAuthToken(jsonBody);
+            string authToken = getElementFromJson(jsonBody, "authToken");
             if(authToken == "-" || authToken.Length != 64)
                 return new Status(401, "You need to be logged in.");
 
@@ -178,18 +184,37 @@ namespace mtcg{
             }
 
             return new Status(404, "Could not find worthy opponent.");
+        }
 
-            // aber wie schicke ich die verschiedenen Ergebnisse (win und loose) hier als einziger Server gleichzeitig an beide User?
-            // oder soll ich für das Ergebnis ein eigenes Server Response machen (also man müsste nach dem Ergebnis spezifisch nachfragen)
-            // dann müsste ich aber das Ergebnis auf dem server zwischenspeichern :/
-            // ... 
+        private Status offerCard(string jsonBody){
+            string authToken = getElementFromJson(jsonBody, "authToken");
+            if(authToken == "-" || authToken.Length != 64)
+                return new Status(401, "You need to be logged in.");
+
+            int offerCardID = int.Parse(getElementFromJson(jsonBody, "offerCardID"));
+            int requestCardID = int.Parse(getElementFromJson(jsonBody, "requestCardID"));
+            CardController cardController = new CardController();
+            return cardController.offerCard(authToken, offerCardID, requestCardID);
+        }
+        
+        private Status deleteOffer(string jsonBody) {
+            string authToken = getElementFromJson(jsonBody, "authToken");
+            if(authToken == "-" || authToken.Length != 64)
+                return new Status(401, "You need to be logged in.");
+
+            int tradeID = int.Parse(getElementFromJson(jsonBody, "tradeID"));
+            CardController cardController = new CardController();
+            return cardController.deleteOffer(authToken, tradeID);
         }
 
         private Status tradeCards(string jsonBody){
-            // schauen, ob er ein trade offer in der db schon hat (wenn nicht dann ein trade offer an server schicken und in der datenbank speichern)
-            // ansonsten an hand des usernamens und nicht des tokens die karten auf beiden seiten in der datenbank aktualisieren
+            string authToken = getElementFromJson(jsonBody, "authToken");
+            if(authToken == "-" || authToken.Length != 64)
+                return new Status(401, "You need to be logged in.");
 
-            return null;
+            int tradeID = int.Parse(getElementFromJson(jsonBody, "tradeID"));
+            CardController cardController = new CardController();
+            return cardController.tradeCards(authToken, tradeID);
         }
 
         private User? findOpponent(User player1){
@@ -204,7 +229,7 @@ namespace mtcg{
         }
 
         private Status stopBattlesearch(string jsonBody){
-            string authToken = getAuthToken(jsonBody);
+            string authToken = getElementFromJson(jsonBody, "authToken");
             if(authToken == "-" || authToken.Length != 64)
                 return new Status(401, "You need to be logged in.");
 
@@ -221,13 +246,13 @@ namespace mtcg{
             return query.Get(param);
         }
 
-        private string getAuthToken(string jsonBody){
-            string authToken = "-";
+        private string getElementFromJson(string jsonBody, string element){
+            string str = "-";
             using(JsonDocument document = JsonDocument.Parse(jsonBody)){
                 JsonElement root = document.RootElement;
-                authToken = root.GetProperty("authToken").GetString();
+                str = root.GetProperty($"{element}").GetString();
             }
-            return authToken;
+            return str;
         }
 
         private bool isinQueue(string token){

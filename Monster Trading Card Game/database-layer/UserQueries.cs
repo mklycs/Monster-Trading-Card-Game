@@ -15,9 +15,8 @@ namespace mtcg{
             using(var command = new NpgsqlCommand($"SELECT id FROM \"USERS\" WHERE username = @username;", conn)){
                 command.Parameters.AddWithValue("username", $"{username}");
                 using(var reader = command.ExecuteReader()){
-                    while(reader.Read()){
+                    while(reader.Read())
                         userID = reader.GetInt32(0);
-                    }
                 }
             }
             return userID;
@@ -28,9 +27,8 @@ namespace mtcg{
             using(var command = new NpgsqlCommand($"SELECT password FROM \"USERS\" WHERE username = @username;", conn)){
                 command.Parameters.AddWithValue("username", $"{username}");
                 using(var reader = command.ExecuteReader()){
-                    while(reader.Read()){
+                    while(reader.Read())
                         password = reader.GetString(0);
-                    }
                 }
             }
 
@@ -42,13 +40,13 @@ namespace mtcg{
         public bool addUser(UserDto user, string token){
             int userID = getUserID(user.username);
             if(userID != -1) 
-                return false; // wurde ein user gefunden/exisitiert wird kein neuer user hinzugefügt
+                return false;
 
             using(var command = new NpgsqlCommand($"INSERT INTO \"STATS\" (coins, wins, looses, elo, rating) VALUES (20, 0, 0, 100, 0.00);", conn))
                 command.ExecuteNonQuery();
 
-            using(var command = new NpgsqlCommand($"INSERT INTO \"USERS\" (username, password, token) VALUES (@username, @password, @token);", conn)){ //"INSERT INTO \"USERS\" (username, password, statsid, stackid, deckid, admin) VALUES (@username, @password, @statsid, @stackid, @deckid, 0);"
-                command.Parameters.AddWithValue("username", $"{user.username}"); // das @ ist jetzt hier nicht notwendig, weil Npgsql das autmoatisch handelt :)
+            using(var command = new NpgsqlCommand($"INSERT INTO \"USERS\" (username, password, token) VALUES (@username, @password, @token);", conn)){
+                command.Parameters.AddWithValue("username", $"{user.username}"); 
                 command.Parameters.AddWithValue("password", $"{user.password}");
                 command.Parameters.AddWithValue("token", $"{token}");
                 command.ExecuteNonQuery();
@@ -68,7 +66,7 @@ namespace mtcg{
                     command.ExecuteNonQuery();
                 }
             }
-            return true; // "user wurde erfolgreich hinzugefuegt"
+            return true;
         }
 
         public bool updateUser(UserDto user){
@@ -84,13 +82,13 @@ namespace mtcg{
                 command.Parameters.AddWithValue("id", userID);
                 command.ExecuteNonQuery();
             }
-            return true; // "user wurde erfolgreich geupdated"
+            return true;
         }
 
         public bool deleteUser(UserDto user){
             int userID = getUserID(user.username);
             if(userID == -1) 
-                return false; // "user wurde nicht gefunden"
+                return false;
 
             if(!comparePasswords(user.username, user.password)) return false;
 
@@ -103,7 +101,7 @@ namespace mtcg{
             using(var command = new NpgsqlCommand($"DELETE FROM \"STACKS\" WHERE userid = {userID};", conn))
                 command.ExecuteNonQuery();
 
-            return true; // "user wurde erfolgreich geloescht"
+            return true;
         }
 
         public bool setTokenDefault(string token){
@@ -129,9 +127,8 @@ namespace mtcg{
             using(var command = new NpgsqlCommand($"SELECT token FROM \"USERS\" WHERE username = @username;", conn)) {
                 command.Parameters.AddWithValue("username", $"{username}");
                 using(var reader = command.ExecuteReader()) {
-                    while(reader.Read()) {
+                    while(reader.Read())
                         token = reader.GetString(0);
-                    }
                 }
             }
 
