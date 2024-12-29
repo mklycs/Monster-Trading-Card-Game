@@ -1,12 +1,13 @@
 ﻿// verwaltet Anfragen zum Erwerb von Karten oder zum Verwalten des Decks
 
 using System;
+using System.Numerics;
 
 namespace mtcg{
     internal class CardController{
         public CardController(){ }
         
-        public Status buyPackage(string token, Random random) {
+        public Status buyPackage(string token, Random random){
             CardQueries cardQueries = new CardQueries();
             int userID = cardQueries.getUserID(token);
             int coins = cardQueries.getCoins(userID);
@@ -23,10 +24,33 @@ namespace mtcg{
             return new Status(200, $"{response}");
         }
 
-        public void defineDeck(){
-            CardService cardService = new CardService(null, null);
+        public bool getDeck(string token, DeckDto deckDto, User user){
+            List<int> cards = new List<int>();
+            cards.Add(deckDto.card1);
+            cards.Add(deckDto.card2);
+            cards.Add(deckDto.card3);
+            cards.Add(deckDto.card4);
+
+            foreach(var card in cards){
+                if(card == 0)
+                    return false;
+            }
+
+            CardQueries cardQueries = new CardQueries();
+            int userID = cardQueries.getUserID(token);
+
+            foreach(var card in cards){
+                if(!cardQueries.checkifCardInStack(card, userID))
+                    return false;
+            }
+
+            CardService cardService = new CardService();
+            foreach(var card in cards)
+                user.deck.Add(cardService.getCard(card));
+
+            return true;
         }
-        
+
         public Status offerCard(string token, int offerCardID, int requestCardID){
             CardQueries cardQueries = new CardQueries();
             int userID = cardQueries.getUserID(token);

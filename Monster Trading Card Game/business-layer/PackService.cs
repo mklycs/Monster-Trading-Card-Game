@@ -18,18 +18,9 @@ namespace mtcg{
             return response;
         }
 
-        private string getCardInfo(int index){
-            A_Card card = null;
-            if(index == 1) card = new Dragon();
-            else if(index == 2) card = new FireElf();
-            else if(index == 3) card = new Goblin();
-            else if(index == 4) card = new Knight();
-            else if(index == 5) card = new Kraken();
-            else if(index == 6) card = new Orc();
-            else if(index == 7) card = new Wizard();
-            else if(index == 8) card = new Fireball();
-            else if(index == 9) card = new Waterfall();
-            else if(index == 10) card = new Gale();
+        private string getCardInfo(int id){
+            CardService cardService = new CardService();
+            A_Card card = cardService.getCard(id);
             
             return $"You unpacked {card.name} ({card.damage},\"{card.elementType}\").\n";
         }

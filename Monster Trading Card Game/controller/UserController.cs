@@ -10,14 +10,7 @@ using Npgsql.Replication;
 namespace mtcg{
     internal class UserController{
         private static readonly string secretKey = "dont implement secret key like that.";
-        //private UserDto? userDto;
-        public UserController(/*UserDto userDto*/){
-            /*
-            this.userDto = userDto;
-            this.userDto.password = this.hashPassword(userDto.password);
-            this.userDto.password_repeat = this.hashPassword(userDto.password_repeat);
-            //*/
-        }
+        public UserController(){}
 
         private bool validateCredentials(UserDto userDto){
             Validator validator = new Validator();
@@ -101,7 +94,7 @@ namespace mtcg{
             UserQueries userQueries = new UserQueries();
 
             if(!userQueries.deleteUser(userDto)) 
-                return new Status(400, "Could not delete user: User does not exist.");
+                return new Status(400, "Could not delete user.");
 
             return new Status(200, $"Successfully deleted user \"{userDto.username}\".");
         }
@@ -155,6 +148,17 @@ namespace mtcg{
             int rating = userInfo.Item6;
 
             return new User(username, token, coins, wins, looses, elo, rating);
+        }
+
+        public bool checkifLoggedIn(string token){
+            if(token == "-" || token.Length != 64)
+                return false;
+
+            UserQueries userQueries = new UserQueries();
+            if(!userQueries.isloggedin(token))
+                return false;
+
+            return true;
         }
     }
 }

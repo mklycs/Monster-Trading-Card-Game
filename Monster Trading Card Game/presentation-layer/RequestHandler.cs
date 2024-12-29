@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -20,25 +21,51 @@ namespace mtcg{
 
             return instance;
         }
-        public string HandleRequest(string request, string httpMethod, string? jsonBody){
-            Status response = new Status();
 
-            if(httpMethod == "GET") 
-                return HandleGet(jsonBody, request, response);
+        public string handleResponseStatus(string statusCode) {
+            if(statusCode == "100") return "Continue";
+            else if(statusCode == "101") return "Switching Protocols";
+            else if(statusCode == "200") return "OK";
+            else if(statusCode == "201") return "Created";
+            else if(statusCode == "202") return "Accepted";
+            else if(statusCode == "204") return "No Content";
+            else if(statusCode == "301") return "Moved Permanently";
+            else if(statusCode == "302") return "Found";
+            else if(statusCode == "304") return "No Modified";
+            else if(statusCode == "400") return "Bad Request";
+            else if(statusCode == "401") return "Unauthorized";
+            else if(statusCode == "403") return "Forbidden";
+            else if(statusCode == "404") return "Not Found";
+            else if(statusCode == "500") return "Internal Server Error";
+            else if(statusCode == "502") return "Bad Gateway";
+            else if(statusCode == "503") return "Service Unavailable";
+            else return "Unknown Request";
+        }
 
-            if(httpMethod == "POST") 
-                return HandlePost(jsonBody, request, response);
+        public void HandleRequest(string request, string httpMethod, string? jsonBody, string httpVersion, NetworkStream? stream) {
+            Status status = new Status();
+            string response = "0:Unknown request.";
 
-            if(httpMethod == "DELETE") 
-                return HandleDelete(jsonBody, request, response);
+            if(httpMethod == "GET")
+                response = HandleGet(jsonBody, request, status);
 
-            if(httpMethod == "PUT") 
-                return HandlePut(jsonBody, request, response);
+            if(httpMethod == "POST"){
+                response = HandlePost(jsonBody, request, status, stream);
+                if(response == null)
+                    return;
+            }
 
-            if(httpMethod == "PATCH") 
-                return HandlePatch(jsonBody, request, response);
+            if(httpMethod == "DELETE")
+                response = HandleDelete(jsonBody, request, status);
 
-            return "0:Unknown request.";
+            if(httpMethod == "PUT")
+                response = HandlePut(jsonBody, request, status);
+
+            if(httpMethod == "PATCH")
+                response = HandlePatch(jsonBody, request, status);
+
+            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {response.Split(':')[0]} {handleResponseStatus(response.Split(':')[0])}\r\nContent-Length: {response.Length}\r\n\r\n{response.Split(':')[1]}");
+            stream.Write(responseBuffer, 0, responseBuffer.Length); // Startet bei der Position 0 des Buffers und sendet die volle Länge des Buffers.
         }
 
         private string HandleGet(string? jsonBody, string request, Status response){
@@ -51,7 +78,7 @@ namespace mtcg{
 
             return $"{response.statusCode}:{response.message}";
         }
-        private string HandlePost(string? jsonBody, string request, Status response){
+        private string HandlePost(string? jsonBody, string request, Status response, NetworkStream? stream){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
                 return "400:No JSON body provided.";
 
@@ -62,7 +89,9 @@ namespace mtcg{
                 response = this.buyPackage(jsonBody);
 
             if(request == "battle"){
-                response = this.battle(jsonBody);
+                response = this.battle(jsonBody, stream);
+                if(response == null)
+                    return null;
             }else if(request == "stopBattlesearch")
                 response = this.stopBattlesearch(jsonBody);
             
@@ -120,10 +149,10 @@ namespace mtcg{
 
         private Status logout(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
+            UserController userController = new UserController();
+            if(!userController.checkifLoggedIn(authToken))
                 return new Status(401, "You need to be logged in.");
 
-            UserController userController = new UserController();
             return userController.logout(authToken);
         }
 
@@ -135,86 +164,108 @@ namespace mtcg{
 
         private Status deleteUser(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
+            UserController userController = new UserController();
+            if(!userController.checkifLoggedIn(authToken))
                 return new Status(401, "You need to be logged in.");
 
             var userDto = JsonSerializer.Deserialize<UserDto>(jsonBody);
-            UserController userController = new UserController();
             return userController.deleteUser(userDto);
         }
 
         private Status changeCredentials(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
+            UserController userController = new UserController();
+            if(!userController.checkifLoggedIn(authToken))
                 return new Status(401, "You need to be logged in.");
 
             var userDto = JsonSerializer.Deserialize<UserDto>(jsonBody);
-            UserController userController = new UserController();
             return userController.changeCredentials(userDto);
         }
 
         private Status buyPackage(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
-                return new Status(401, "You need to be logged in.");
+
+            {
+                UserController userController = new UserController();
+                if(!userController.checkifLoggedIn(authToken))
+                    return new Status(401, "You need to be logged in.");
+            }
 
             CardController cardController = new CardController();
             return cardController.buyPackage(authToken, random);
         }
 
-        private Status battle(string jsonBody){
+        private Status offerCard(string jsonBody) {
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
-                return new Status(401, "You need to be logged in.");
 
-            if(isinQueue(authToken))
-                return new Status(400, "You are already in battlequeue.");
-
-            UserController userController = new UserController();
-            User player1 = userController.getUser(authToken);
-            player1.searchingBattle = true;
-            battleQueue.Add(player1);
-            // Console.WriteLine($"Player \"{player1.username}\" has been added to battlequeue.");
-
-            User player2 = findOpponent(player1);
-            if(player2 != null){
-                // Gegner gefunden - starte den Kampf
-                string response = ""; //StartBattle(player1, player2); <>/<>/<>/<>/<>/<>/<>/<>/<>/<>/<>/<>/<>
-                return new Status(200, $"{response}"); 
+            {
+                UserController userController = new UserController();
+                if(!userController.checkifLoggedIn(authToken))
+                    return new Status(401, "You need to be logged in.");
             }
-
-            return new Status(404, "Could not find worthy opponent.");
-        }
-
-        private Status offerCard(string jsonBody){
-            string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
-                return new Status(401, "You need to be logged in.");
 
             int offerCardID = int.Parse(getElementFromJson(jsonBody, "offerCardID"));
             int requestCardID = int.Parse(getElementFromJson(jsonBody, "requestCardID"));
             CardController cardController = new CardController();
             return cardController.offerCard(authToken, offerCardID, requestCardID);
         }
-        
+
         private Status deleteOffer(string jsonBody) {
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
-                return new Status(401, "You need to be logged in.");
+
+            {
+                UserController userController = new UserController();
+                if(!userController.checkifLoggedIn(authToken))
+                    return new Status(401, "You need to be logged in.");
+            }
 
             int tradeID = int.Parse(getElementFromJson(jsonBody, "tradeID"));
             CardController cardController = new CardController();
             return cardController.deleteOffer(authToken, tradeID);
         }
 
-        private Status tradeCards(string jsonBody){
+        private Status tradeCards(string jsonBody) {
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
-                return new Status(401, "You need to be logged in.");
+
+            {
+                UserController userController = new UserController();
+                if(!userController.checkifLoggedIn(authToken))
+                    return new Status(401, "You need to be logged in.");
+            }
 
             int tradeID = int.Parse(getElementFromJson(jsonBody, "tradeID"));
             CardController cardController = new CardController();
             return cardController.tradeCards(authToken, tradeID);
+        }
+
+        private Status battle(string jsonBody, NetworkStream? stream){
+            string authToken = getElementFromJson(jsonBody, "authToken");
+            UserController userController = new UserController();
+            if(!userController.checkifLoggedIn(authToken))
+                return new Status(401, "You need to be logged in.");
+
+            if(isinQueue(authToken))
+                return new Status(400, "You are already in battlequeue.");
+
+            User player1 = userController.getUser(authToken);
+            DeckDto deckDto = JsonSerializer.Deserialize<DeckDto>(jsonBody);
+            CardController cardcontroller = new CardController();
+
+            if(!cardcontroller.getDeck(authToken, deckDto, player1))
+                return new Status(400, "Please define a deck before battling.");
+
+            player1.searchingBattle = true;
+            player1.stream = stream;
+            battleQueue.Add(player1);
+            
+            User player2 = findOpponent(player1);
+            if(player2 != null){
+                BattleController battleController = new BattleController();
+                battleController.battle(player1, player2, random);
+                return null; 
+            }
+
+            return new Status(204, "Still searching...");
         }
 
         private User? findOpponent(User player1){
@@ -230,8 +281,12 @@ namespace mtcg{
 
         private Status stopBattlesearch(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
-            if(authToken == "-" || authToken.Length != 64)
-                return new Status(401, "You need to be logged in.");
+
+            {
+                UserController userController = new UserController();
+                if(!userController.checkifLoggedIn(authToken))
+                    return new Status(401, "You need to be logged in.");
+            }
 
             if(!isinQueue(authToken))
                 return new Status(400, "Not in battlequeue.");

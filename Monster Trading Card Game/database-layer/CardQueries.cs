@@ -40,7 +40,10 @@ namespace mtcg{
             using(var command = new NpgsqlCommand("UPDATE \"STATS\" SET coins = @coins WHERE id = @userid;", conn)){
                 command.Parameters.AddWithValue("coins", coins);
                 command.Parameters.AddWithValue("userid", userID);
-                command.ExecuteNonQuery();
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
             }
             return true;
         }
@@ -49,7 +52,10 @@ namespace mtcg{
             using(var command = new NpgsqlCommand("INSERT INTO \"STACKS\" (userid, cardid) VALUES (@userid, @cardid);", conn)){
                 command.Parameters.AddWithValue("userid", userID);
                 command.Parameters.AddWithValue("cardid", cardID);
-                command.ExecuteNonQuery();
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
             }
             return true;
         }
@@ -67,7 +73,10 @@ namespace mtcg{
 
             using(var command = new NpgsqlCommand("DELETE FROM \"STACKS\" WHERE id = @id;", conn)) {
                 command.Parameters.AddWithValue("id", stackID);
-                command.ExecuteNonQuery();
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
             }
             return true;
         }
@@ -95,7 +104,10 @@ namespace mtcg{
                     command.Parameters.AddWithValue("userID", userID);
                     command.Parameters.AddWithValue("offerCardID", offerCardID);
                     command.Parameters.AddWithValue("requestCardID", requestCardID);
-                    command.ExecuteNonQuery();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    
+                    if(rowsAffected == 0)
+                        return false;
                 }
             }catch(Exception exception){
                 return false;
@@ -108,7 +120,10 @@ namespace mtcg{
             using(var command = new NpgsqlCommand("DELETE FROM \"TRADEOFFERS\" WHERE id = @tradeID AND userid = @userID;", conn)){
                 command.Parameters.AddWithValue("tradeID", tradeID);
                 command.Parameters.AddWithValue("userID", userID);
-                command.ExecuteNonQuery();
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
             }
             return true;
         }

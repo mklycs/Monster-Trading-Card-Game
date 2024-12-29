@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Metrics;
 using System.Security.Cryptography.X509Certificates;
 using Npgsql;
 
@@ -32,7 +33,8 @@ namespace mtcg{
                 }
             }
 
-            if(paswd != password) return false;
+            if(paswd != password) 
+                return false;
 
             return true;
         }
@@ -90,16 +92,26 @@ namespace mtcg{
             if(userID == -1) 
                 return false;
 
-            if(!comparePasswords(user.username, user.password)) return false;
+            if(!comparePasswords(user.username, user.password))
+                return false;
 
-            using(var command = new NpgsqlCommand($"DELETE FROM \"USERS\" WHERE id = {userID};", conn))
-                command.ExecuteNonQuery();
+            using(var command = new NpgsqlCommand($"DELETE FROM \"USERS\" WHERE id = {userID};", conn)){
+                int rowsAffected = command.ExecuteNonQuery();
+                if(rowsAffected == 0)
+                    return false;
+            }
 
-            using(var command = new NpgsqlCommand($"DELETE FROM \"STATS\" WHERE id = {userID};", conn)) // weil scheiss delete on cascade nicht funktioniert
-                command.ExecuteNonQuery();
+            using(var command = new NpgsqlCommand($"DELETE FROM \"STATS\" WHERE id = {userID};", conn)){ // weil scheiss delete on cascade nicht funktioniert
+                int rowsAffected = command.ExecuteNonQuery();
+                if(rowsAffected == 0)
+                    return false;
+            }
 
-            using(var command = new NpgsqlCommand($"DELETE FROM \"STACKS\" WHERE userid = {userID};", conn))
-                command.ExecuteNonQuery();
+            using(var command = new NpgsqlCommand($"DELETE FROM \"STACKS\" WHERE userid = {userID};", conn)){
+                int rowsAffected = command.ExecuteNonQuery();
+                if(rowsAffected == 0)
+                    return false;
+            }
 
             return true;
         }
@@ -108,25 +120,33 @@ namespace mtcg{
             using(var command = new NpgsqlCommand($"UPDATE \"USERS\" SET token = @token_new WHERE token=@token_old;", conn)){
                 command.Parameters.AddWithValue("token_new", "-");
                 command.Parameters.AddWithValue("token_old", $"{token}");
-                command.ExecuteNonQuery();
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
             }
 
             return true;
         }
+
         public bool setToken(string username, string token){
             using(var command = new NpgsqlCommand($"UPDATE \"USERS\" SET token=@token WHERE username=@username;", conn)){
                 command.Parameters.AddWithValue("token", $"{token}");
                 command.Parameters.AddWithValue("username", $"{username}");
-                command.ExecuteNonQuery();
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
             }
+
             return true;
         }
-
+        /*
         public string getToken(string username){
             string token = "";
             using(var command = new NpgsqlCommand($"SELECT token FROM \"USERS\" WHERE username = @username;", conn)) {
                 command.Parameters.AddWithValue("username", $"{username}");
-                using(var reader = command.ExecuteReader()) {
+                using(var reader = command.ExecuteReader()){
                     while(reader.Read())
                         token = reader.GetString(0);
                 }
@@ -134,6 +154,7 @@ namespace mtcg{
 
             return token;
         }
+        //*/
 
         public bool isTokenSet(string username){
             using(var command = new NpgsqlCommand("SELECT CASE WHEN token = '-' THEN FALSE ELSE TRUE END FROM \"USERS\" WHERE username=@username;", conn)){
@@ -146,12 +167,28 @@ namespace mtcg{
             return false;
         }
 
+        public bool isloggedin(string token){
+            int count = 0;
+            using(var command = new NpgsqlCommand("SELECT COUNT(id) FROM \"USERS\" WHERE token = @token;", conn)){
+                command.Parameters.AddWithValue("token", $"{token}");
+                using(var reader = command.ExecuteReader()) {
+                    while(reader.Read())
+                        count = reader.GetInt32(0);
+                }
+            }
+
+            if(count < 1)
+                return false;
+
+            return true;
+        }
+
         public (string, int, int, int, int, int, int) getUser(string token){
             int coins = 0, wins = 0, looses = 0, elo = 0, rating = 0, cardid = 0;
             string username = "";
             using(var command = new NpgsqlCommand($"SELECT username, coins, wins, looses, elo, rating, cardid FROM \"USERS\" users JOIN \"STATS\" stats on users.statsid = stats.id JOIN \"STACKS\" stack on users.id = stack.userid WHERE token = @token;", conn)) {
                 command.Parameters.AddWithValue("token", $"{token}");
-                using(var reader = command.ExecuteReader()) {
+                using(var reader = command.ExecuteReader()){
                     while(reader.Read()){
                         username = reader.GetString(0);
                         coins = reader.GetInt32(1);
@@ -163,6 +200,7 @@ namespace mtcg{
                     }
                 }
             }
+
             return (username, coins, wins, looses, elo, rating, cardid);
         }
     }

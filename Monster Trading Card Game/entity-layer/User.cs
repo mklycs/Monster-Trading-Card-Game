@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 namespace mtcg{
     public class User{
@@ -12,6 +15,8 @@ namespace mtcg{
         public List<A_Card> stack { get; set; } = new List<A_Card>();
         public List<A_Card> deck { get; set; } = new List<A_Card>(4);
         public string token { get; set; }
+
+        public NetworkStream stream { get; set; }
         public bool searchingBattle { get; set; }
 
         public User(string? username, /*string? password,*/ string token, int coins = 20, int wins = 0, int looses = 0, int elo = 100, int rating = 0, bool searchingBattle = false){
@@ -42,6 +47,11 @@ namespace mtcg{
             */
 
             this.deck = new List<A_Card>(4);
+        }
+
+        public void sendServerBattleResponse(string response){
+            // byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {response.Split(':')[0]} {handleResponseStatus(response.Split(':')[0])}\r\nContent-Length: {response.Length}\r\n\r\n{response.Split(':')[1]}");
+            // stream.Write(responseBuffer, 0, responseBuffer.Length);
         }
     }
 }

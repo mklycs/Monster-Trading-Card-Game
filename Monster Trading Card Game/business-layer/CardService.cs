@@ -1,38 +1,33 @@
 ﻿// Schnittstelle für Kartenoperationen, wie das Verwalten von Decks, Hinzufügen/Entfernen von Karten
 
 using System;
+using System.Reflection;
 
 namespace mtcg{
     internal class CardService{
-        public List<A_Card> deck;
-        public List<A_Card> stack;
-        public CardService(List<A_Card> deck, List<A_Card> stack){
-            this.deck = deck;
-            this.stack = stack;
+        public CardService(){}
+
+        public A_Card getCard(int id){
+            if(id == 1) return new Dragon();
+            else if(id == 2) return new FireElf();
+            else if(id == 3) return new Goblin();
+            else if(id == 4) return new Knight();
+            else if(id == 5) return new Kraken();
+            else if(id == 6) return new Orc();
+            else if(id == 7) return new Wizard();
+            else if(id == 8) return new Fireball();
+            else if(id == 9) return new Waterfall();
+            else if(id == 10) return new Gale();
+
+            return null;
+        }
+        public void add(){
+        
         }
 
-        public void add(A_Card card){
-            stack.Add(card);          // "Objekte werden erst nach ihrem Lebenszyklus (Scope) freigegeben"
-            deck.Add(card);           // "Solange ein Objekt referenziert wird, bleibt es im Speicher"
-        }
+        public void remove(){
 
-        public void remove(A_Card card){
-            stack.Remove(card);          // löscht die Karte aus dem Stack, die Referenz ist aber noch im Deck enthalten
-            deck.Remove(card);           // löscht die Karte komplett und es gibt gar keine Referenzen
         }
-
-        public void emptyDeck(){
-            deck.Clear();
-        }
-
-        /*
-        public void initDeck(Random random){
-            for(int i = 0; i < 4; i++){
-                int random_card = random.Next(this.stack.Count);
-                this.deck.Add(this.stack[random_card]);          // erstellt kein neues Objekt sondern Referenz
-            }
-        }
-        */
 
         /*
         public void defineDeck(Validator validator){
