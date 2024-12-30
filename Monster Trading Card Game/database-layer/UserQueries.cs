@@ -203,5 +203,23 @@ namespace mtcg{
 
             return (username, coins, wins, looses, elo, rating, cardid);
         }
+
+        public bool updateStats(User user){
+            int userID = getUserID(user.username);
+            using(var command = new NpgsqlCommand($"UPDATE \"STATS\" SET coins=@coins, wins = @wins, looses = @looses, elo = @elo, rating = @rating WHERE id=@userID;", conn)){
+                command.Parameters.AddWithValue("coins", user.coins);
+                command.Parameters.AddWithValue("wins", user.wins);
+                command.Parameters.AddWithValue("looses", user.looses);
+                command.Parameters.AddWithValue("elo", user.elo);
+                command.Parameters.AddWithValue("rating", user.rating);
+                command.Parameters.AddWithValue("userID", userID);
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if(rowsAffected == 0)
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

@@ -3,7 +3,7 @@
 namespace mtcg{
     internal class Fireball : A_Card{
         public Fireball(){
-            // this.id = 8;
+            this.id = 8;
             this.name = "Fireball";
             this.cardType = 's';
             this.elementType = "Fire";

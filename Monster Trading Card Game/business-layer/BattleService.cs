@@ -1,46 +1,43 @@
 ﻿// enthält die Logik für den Kampf, die Kampfauswertung und Battle-Log
 
 using System;
+using System.Collections.Generic;
 
 namespace mtcg{
     internal class BattleService{
         public BattleService() { }
         
-        public int battle(User player1, User player2, Random random, ref string response){
-            CardService player1_cardService = new CardService();
-            CardService player2_cardService = new CardService(); // ???
-
-            for(int round = 1; round < 101; round++) {
+        public int battle(User player1, User player2, Random random, ref string response, CardService cardService){
+            for(int round = 1; round < 101; round++){
                 if(player2.deck.Count < 1){
                     return 1;
                 }else if(player1.deck.Count < 1) 
                     return -1;
 
                 response += $"Round: {round}\n";
-                int opps_card = random.Next(player2.deck.Count);
-                int your_card = random.Next(player1.deck.Count);
-                response += $"{player2.username}'s card: {player2.deck[opps_card].name} ({player2.deck[opps_card].damage}, \"{player2.deck[opps_card].elementType}\")\n";
-                response += $"{player1.username}'s card: {player1.deck[your_card].name} ({player1.deck[your_card].damage}, \"{player1.deck[your_card].elementType}\")\n";
+                int player2_card = random.Next(player2.deck.Count);
+                int player1_card = random.Next(player1.deck.Count);
+                response += $"{player2.username}'s card: {player2.deck[player2_card].name} ({player2.deck[player2_card].damage}, \"{player2.deck[player2_card].elementType}\")\n";
+                response += $"{player1.username}'s card: {player1.deck[player1_card].name} ({player1.deck[player1_card].damage}, \"{player1.deck[player1_card].elementType}\")\n";
 
-                int result = fight(player1.deck[your_card], player2.deck[opps_card], ref response);
-                if(result == 1){ // W
-                    //player1_cardService.add(player2.deck[opps_card]);
-                    //player2_cardService.remove(player2.deck[opps_card]);
-                }else if(result == -1){ // L
-                    //player2_cardService.add(player1.deck[your_card]);
-                    //player1_cardService.remove(player1.deck[your_card]);
-                }else
+                int result = fight(player1.username, player1.deck[player1_card], player2.username, player2.deck[player2_card], ref response);
+                if(result == 1){ // Player1 wins & Player2 looses
+                    player1.deck.Add(player2.deck[player2_card]);
+                    player2.deck.Remove(player2.deck[player2_card]);
+                }else if(result == -1){ // Player1 looses & Player2 wins
+                    player2.deck.Add(player1.deck[player1_card]);
+                    player1.deck.Remove(player1.deck[player1_card]);
+                }else // Draw.
                     response += "Draw.\n";
 
-                response += displayDecks(player1.deck, player2.deck, player1.username, player2.username);
-                response += '\n';
+                response += '\n' + displayDecks(player1.deck, player2.deck, player1.username, player2.username);
             }
 
             return 0;
         }
 
-        public int fight(A_Card player1_card, A_Card player2_card, ref string response) {
-            int result = specialCases(player1_card, player2_card, ref response);
+        private int fight(string player1_name, A_Card player1_card, string player2_name, A_Card player2_card, ref string response){
+            int result = specialCases(player1_name, player1_card, player2_name, player2_card, ref response);
             if(result == 1){
                 return 1;
             }else if(result == -1)
@@ -64,15 +61,15 @@ namespace mtcg{
             }
 
             if(temp_player1damage > temp_player2damage){
-                response += $"{player1_card.name}'s damage is higher than {player2_card.name}. {player2_card.name} is added to your deck.\n";
+                response += $"{player1_card.name}'s damage is higher than {player2_card.name}. {player2_card.name} is being removed from {player2_name}'s deck and added to {player1_name}'s deck.\n"; 
                 return 1;
             }else if(temp_player1damage < temp_player2damage){
-                response += $"{player1_card.name}'s damage is lower than {player2_card.name}. You loose {player1_card.name} from your deck.\n";
+                response += $"{player2_card.name}'s damage is higher than {player1_card.name}. {player1_card.name} is being removed from {player1_name}'s deck and added to {player2_name}'s deck.\n";
                 return -1;
             }else return 0;
         }
 
-        public float compareElements(string? player1_elementType, string? player2_elementType){
+        private float compareElements(string? player1_elementType, string? player2_elementType){
             float effectiveness = 1;
 
             if(player1_elementType == "Water" && player2_elementType == "Fire"){
@@ -91,7 +88,7 @@ namespace mtcg{
             return effectiveness;
         }
 
-        public int specialCases(A_Card player1_card, A_Card player2_card, ref string response){
+        private int specialCases(string player1_name, A_Card player1_card, string player2_name, A_Card player2_card, ref string response){
             int result = 0;
             // Dragon & FireElf
             if(player1_card.name == "Dragon" && player2_card.name == "FireElf"){
@@ -135,24 +132,23 @@ namespace mtcg{
             }
 
             if(result == -1){
-                response += $"Your opponent gets your {player1_card.name}.\n";
+                response += $"{player1_name}'s {player1_card.name} is being added to {player2_name}'s deck.\n";
             }else if(result == 1)
-                response += $"Your opponents {player2_card.name} is being added to your deck.\n";
+                response += $"{player2_name}'s {player2_card.name} is being added to {player1_name}'s deck.\n";
 
             return result;
         }
-        //*/
 
         public string displayDecks(List<A_Card> player1_deck, List<A_Card> player2_deck, string player1_username, string player2_username){
             string text = "";
-            text += $"{player1_username} deck: \n";
-            for(int i = 0; i < player1_deck.Count; i++)
-                text += $"{player1_deck[i].name}\n";
+            text += $"{player1_username}'s deck: \n";
+            foreach(var card in player1_deck)
+                text += $"{card.name}\n";
             text += '\n';
 
-            text += $"{player2_username} deck: \n";
-            for(int i = 0; i < player2_deck.Count; i++)
-                text += $"{player2_deck[i].name}\n";
+            text += $"{player2_username}'s deck: \n";
+            foreach(var card in player2_deck)
+                text += $"{card.name}\n";
             text += '\n';
 
             return text;

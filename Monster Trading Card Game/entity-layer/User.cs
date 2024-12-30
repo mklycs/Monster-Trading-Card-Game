@@ -16,7 +16,9 @@ namespace mtcg{
         public List<A_Card> deck { get; set; } = new List<A_Card>(4);
         public string token { get; set; }
 
+        public string httpVersion { get; set; }
         public NetworkStream stream { get; set; }
+        public TcpClient client { get; set; }
         public bool searchingBattle { get; set; }
 
         public User(string? username, /*string? password,*/ string token, int coins = 20, int wins = 0, int looses = 0, int elo = 100, int rating = 0, bool searchingBattle = false){
@@ -31,27 +33,32 @@ namespace mtcg{
             this.searchingBattle = searchingBattle;
 
             this.stack = new List<A_Card>();
-            /*
-            for(int i = 0; i < 2; i++){
-                this.stack.Add(new Dragon());
-                this.stack.Add(new FireElf());
-                this.stack.Add(new Goblin());
-                this.stack.Add(new Knight());
-                this.stack.Add(new Kraken());
-                this.stack.Add(new Orc());
-                this.stack.Add(new Wizard());
-                this.stack.Add(new Fireball());
-                this.stack.Add(new Waterfall());
-                this.stack.Add(new Gale());
-            }
-            */
 
             this.deck = new List<A_Card>(4);
         }
 
         public void sendServerBattleResponse(string response){
-            // byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {response.Split(':')[0]} {handleResponseStatus(response.Split(':')[0])}\r\nContent-Length: {response.Length}\r\n\r\n{response.Split(':')[1]}");
-            // stream.Write(responseBuffer, 0, responseBuffer.Length);
+            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} 200 OK\r\nContent-Length: {response.Length}\r\n\r\n{response}");
+            stream.Write(responseBuffer, 0, responseBuffer.Length);
+            stream.Close();
+            client.Close();
+
+            /*
+            if(stream != null && stream.CanWrite) {
+                byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} 200 OK\r\nContent-Length: {response.Length}\r\n\r\n{response}");
+                stream.Write(responseBuffer, 0, responseBuffer.Length);
+                stream.Close();
+            } else {
+                // Fehlerbehandlung, z.B. Loggen, Stream schließen, oder erneutes Öffnen des Streams
+                Console.WriteLine("Stream ist nicht verfügbar oder wurde bereits geschlossen.");
+            }
+            */
+        }
+
+        public void closeConnectionToServer(){
+            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} 200 OK\r\nContent-Length: {"200 Stopped searching for player to battle.".Length}\r\n\r\nStopped searching for player to battle.");
+            stream.Write(responseBuffer, 0, responseBuffer.Length);
+            stream.Close();
         }
     }
 }

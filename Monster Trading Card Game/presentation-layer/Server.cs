@@ -18,8 +18,8 @@ namespace mtcg{
             Console.WriteLine("Server started, listening on port 8080...");
 
             while(true){
-                using TcpClient client = listener.AcceptTcpClient();
-                using NetworkStream? stream = client.GetStream();
+                /* using */ TcpClient client = listener.AcceptTcpClient();
+                /* using */ NetworkStream? stream = client.GetStream();
 
                 byte[] buffer = new byte[client.ReceiveBufferSize];
                 int bytesRead = stream.Read(buffer, 0, buffer.Length);
@@ -33,7 +33,7 @@ namespace mtcg{
 
                 // Parse Body for POST requests
                 string? jsonBody = httpMethod != "GET" ? request.Split("\r\n\r\n")[1] : null;
-                _requestHandler.HandleRequest(requestUrl.Substring(1), httpMethod, jsonBody, httpVersion, stream);
+                _requestHandler.HandleRequest(requestUrl.Substring(1), httpMethod, jsonBody, httpVersion, client, stream);
             }
         }
     }
