@@ -1,5 +1,6 @@
 ﻿// nimmt Anfragen zur Registrierung, Login und anderen Benutzeraktionen entgegen
 
+using System;
 using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
@@ -145,7 +146,7 @@ namespace mtcg{
             int wins = userInfo.Item3;
             int looses = userInfo.Item4;
             int elo = userInfo.Item5;
-            int rating = userInfo.Item6;
+            float rating = userInfo.Item6;
 
             return new User(username, token, coins, wins, looses, elo, rating);
         }
@@ -159,6 +160,23 @@ namespace mtcg{
                 return false;
 
             return true;
+        }
+
+        public string showScoreboard(){
+            UserQueries userQueries = new UserQueries();
+            var tupleList = userQueries.getBestPlayers();
+            string scoreboard = "";
+
+            for(int i = 0; i < tupleList.Count; i++){
+                scoreboard += $"{i + 1}. ";
+                scoreboard += tupleList[i].Item1 + ": ";
+                scoreboard += $"{tupleList[i].Item2} wins ";
+                scoreboard += $"{tupleList[i].Item3} looses ";
+                scoreboard += $"{tupleList[i].Item4} elo ";
+                scoreboard += $"{tupleList[i].Item5}% winratio\n";
+            }
+
+            return scoreboard;
         }
     }
 }

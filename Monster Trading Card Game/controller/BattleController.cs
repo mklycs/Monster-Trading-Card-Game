@@ -45,13 +45,13 @@ namespace mtcg{
             player.wins += 1;
             player.elo += 3;
             player.coins += 4;
-            player.rating = player.wins / (player.wins + player.looses);
+            player.rating = (((float)player.wins / (player.wins + player.looses)) * 100);
         }
 
         private void processLoose(User player){
             player.looses += 1;
             player.elo -= 5;
-            player.rating = player.wins / (player.wins + player.looses);
+            player.rating = (((float)player.wins / (player.wins + player.looses)) * 100);
         }
 
         private void processDraw(User player){

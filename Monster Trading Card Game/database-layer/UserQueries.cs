@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Metrics;
+using System.Drawing;
 using System.Security.Cryptography.X509Certificates;
 using Npgsql;
 
@@ -141,20 +142,6 @@ namespace mtcg{
 
             return true;
         }
-        /*
-        public string getToken(string username){
-            string token = "";
-            using(var command = new NpgsqlCommand($"SELECT token FROM \"USERS\" WHERE username = @username;", conn)) {
-                command.Parameters.AddWithValue("username", $"{username}");
-                using(var reader = command.ExecuteReader()){
-                    while(reader.Read())
-                        token = reader.GetString(0);
-                }
-            }
-
-            return token;
-        }
-        //*/
 
         public bool isTokenSet(string username){
             using(var command = new NpgsqlCommand("SELECT CASE WHEN token = '-' THEN FALSE ELSE TRUE END FROM \"USERS\" WHERE username=@username;", conn)){
@@ -183,9 +170,10 @@ namespace mtcg{
             return true;
         }
 
-        public (string, int, int, int, int, int, int) getUser(string token){
-            int coins = 0, wins = 0, looses = 0, elo = 0, rating = 0, cardid = 0;
+        public (string, int, int, int, int, float, int) getUser(string token){
+            int coins = 0, wins = 0, looses = 0, elo = 0, cardid = 0;
             string username = "";
+            float rating = 0;
             using(var command = new NpgsqlCommand($"SELECT username, coins, wins, looses, elo, rating, cardid FROM \"USERS\" users JOIN \"STATS\" stats on users.statsid = stats.id JOIN \"STACKS\" stack on users.id = stack.userid WHERE token = @token;", conn)) {
                 command.Parameters.AddWithValue("token", $"{token}");
                 using(var reader = command.ExecuteReader()){
@@ -195,7 +183,7 @@ namespace mtcg{
                         wins = reader.GetInt32(2);
                         looses = reader.GetInt32(3);
                         elo = reader.GetInt32(4);
-                        rating = reader.GetInt32(5);
+                        rating = reader.GetFloat(5);
                         cardid = reader.GetInt32(6);
                     }
                 }
@@ -220,6 +208,23 @@ namespace mtcg{
             }
 
             return true;
+        }
+
+        public List<(string, int, int, int, float)> getBestPlayers(){
+            var tupleList = new List<(string, int, int, int, float)>{};
+            using(var command = new NpgsqlCommand("SELECT username, wins, looses, elo, rating FROM \"USERS\" users \r\nJOIN \"STATS\" stats ON users.id = stats.id\r\nORDER BY elo DESC LIMIT 5;", conn)){
+                using(var reader = command.ExecuteReader()){
+                    while(reader.Read()){
+                        string username = reader.GetString(0);
+                        int wins = reader.GetInt32(1);
+                        int looses = reader.GetInt32(2);
+                        int elo = reader.GetInt32(3);
+                        float rating = reader.GetFloat(4);
+                        tupleList.Add((username, wins, looses, elo, rating));
+                    }
+                }
+            }
+            return tupleList;
         }
     }
 }

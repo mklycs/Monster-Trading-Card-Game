@@ -44,10 +44,10 @@ namespace mtcg{
 
         public void HandleRequest(string request, string httpMethod, string? jsonBody, string httpVersion, TcpClient client, NetworkStream? stream){
             Status status = new Status();
-            string response = "0:Unknown request.";
+            string response = "0~Unknown request.";
 
             if(httpMethod == "GET")
-                response = HandleGet(jsonBody, request, status);
+                response = HandleGet(request, status);
 
             if(httpMethod == "POST"){
                 response = HandlePost(jsonBody, request, status, httpVersion, client, stream);
@@ -64,25 +64,21 @@ namespace mtcg{
             if(httpMethod == "PATCH")
                 response = HandlePatch(jsonBody, request, status);
 
-            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {response.Split(':')[0]} {handleResponseStatus(response.Split(':')[0])}\r\nContent-Length: {response.Length}\r\n\r\n{response.Split(':')[1]}");
+            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {response.Split('~')[0]} {handleResponseStatus(response.Split('~')[0])}\r\nContent-Length: {response.Length}\r\n\r\n{response.Split('~')[1]}");
             stream.Write(responseBuffer, 0, responseBuffer.Length); // Startet bei der Position 0 des Buffers und sendet die volle Länge des Buffers.
             stream.Close();
             client.Close();
         }
 
-        private string HandleGet(string? jsonBody, string request, Status response){
-            if(string.IsNullOrWhiteSpace(jsonBody)) 
-                return "400:No JSON body provided.";
+        private string HandleGet(string request, Status response){
+            if(request == "showScoreboard")
+                response = this.showScoreboard();
 
-            if(request == "showScoreboard"){
-                // ...
-            }
-
-            return $"{response.statusCode}:{response.message}";
+            return $"{response.statusCode}~{response.message}";
         }
         private string HandlePost(string? jsonBody, string request, Status response, string httpVersion, TcpClient client, NetworkStream? stream) {
             if(string.IsNullOrWhiteSpace(jsonBody))
-                return "400:No JSON body provided.";
+                return "400~No JSON body provided.";
 
             if(request == "signup")
                 response = this.signup(jsonBody);
@@ -90,7 +86,7 @@ namespace mtcg{
             if(request == "buyPackage")
                 response = this.buyPackage(jsonBody);
 
-            if(request == "battle") {
+            if(request == "battle"){
                 response = this.battle(jsonBody, httpVersion, client, stream);
                 if(response == null)
                     return null;
@@ -103,12 +99,12 @@ namespace mtcg{
             if(request == "offerCard")
                 response = this.offerCard(jsonBody);
 
-            return $"{response.statusCode}:{response.message}";
+            return $"{response.statusCode}~{response.message}";
         }
 
         private string HandleDelete(string? jsonBody, string request, Status response){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
-                return "400:No JSON body provided.";
+                return "400~No JSON body provided.";
 
             if(request == "deleteUser")
                 response = this.deleteUser(jsonBody);
@@ -116,22 +112,22 @@ namespace mtcg{
             if(request == "deleteOffer")
                 response = this.deleteOffer(jsonBody);
 
-            return $"{response.statusCode}:{response.message}";
+            return $"{response.statusCode}~{response.message}";
         }
 
         private string HandlePut(string? jsonBody, string request, Status response){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
-                return "400:No JSON body provided.";
+                return "400~No JSON body provided.";
 
             // if(request == "foo") 
             // ...
 
-            return $"{response.statusCode}:{response.message}";
+            return $"{response.statusCode}~{response.message}";
         }
 
         private string HandlePatch(string? jsonBody, string request, Status response){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
-                return "400:No JSON body provided.";
+                return "400~No JSON body provided.";
 
             if(request == "changeCredentials"){
                 response = this.changeCredentials(jsonBody);
@@ -143,7 +139,7 @@ namespace mtcg{
             if(request == "tradeCards")
                 response = this.tradeCards(jsonBody);
 
-            return $"{response.statusCode}:{response.message}";
+            return $"{response.statusCode}~{response.message}";
         }
 
         private Status signup(string jsonBody){
@@ -272,10 +268,10 @@ namespace mtcg{
                 battleController.battle(player1, player2, random);
                 return null; 
             }
-            
-            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} 204 No content\r\nContent-Length: {"204 Still searching...".Length}\r\n\r\nStill searching...");
-            player1.stream.Write(responseBuffer, 0, responseBuffer.Length);
-            return null; /* new Status(204, "Still searching..."); */
+            string response = "200~Still searching...";
+            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {"200"} {"OK"}\r\nContent-Length: {"Still searching...".Length}\r\n\r\n{"Still searching..."}");
+            stream.Write(responseBuffer, 0, responseBuffer.Length);
+            return null; /* new Status(202, "Still searching..."); */
         }
 
         private User? findOpponent(User player1){
@@ -289,7 +285,7 @@ namespace mtcg{
             return null;
         }
 
-        private Status stopBattlesearch(string jsonBody){ // ???
+        private Status stopBattlesearch(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
 
             {
@@ -302,7 +298,7 @@ namespace mtcg{
                 return new Status(400, "Not in battlequeue.");
 
             removePlayerFromBattlequeue(authToken);
-            return null;/* new Status(200, "Stopped searching for player to battle."); */
+            return new Status(200, "Stopped searching for player to battle.");
         }
 
         private bool isinQueue(string token){
@@ -323,15 +319,21 @@ namespace mtcg{
             }
         }
 
+        private Status showScoreboard(){
+            UserController userController = new UserController();
+            string scoreboard = userController.showScoreboard();
+            return new Status(200, scoreboard);
+        }
+
         private string? ExtractQueryParam(string request, string param) {
             var uri = new Uri("http://localhost:8080" + request);
             var query = HttpUtility.ParseQueryString(uri.Query);
             return query.Get(param);
         }
 
-        private string getElementFromJson(string jsonBody, string element) {
+        private string getElementFromJson(string jsonBody, string element){
             string str = "-";
-            using(JsonDocument document = JsonDocument.Parse(jsonBody)) {
+            using(JsonDocument document = JsonDocument.Parse(jsonBody)){
                 JsonElement root = document.RootElement;
                 str = root.GetProperty($"{element}").GetString();
             }
