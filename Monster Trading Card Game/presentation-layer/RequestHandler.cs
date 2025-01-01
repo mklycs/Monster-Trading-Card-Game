@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -10,9 +11,11 @@ using System.Xml.Linq;
 
 namespace mtcg{
     public class RequestHandler{
-        private static RequestHandler? instance = null;
         private Random random = new Random();
         private List<User> battleQueue = new List<User>();
+        private static readonly object battleQueueLock = new object();
+
+        private static RequestHandler? instance = null;
         private RequestHandler(){ }
 
         public static RequestHandler getInstance(){
@@ -42,27 +45,27 @@ namespace mtcg{
             else return "Unknown Request";
         }
 
-        public void HandleRequest(string request, string httpMethod, string? jsonBody, string httpVersion, TcpClient client, NetworkStream? stream){
+        public void handleRequest(string request, string httpMethod, string? jsonBody, string httpVersion, TcpClient client, NetworkStream? stream){
             Status status = new Status();
             string response = "0~Unknown request.";
 
             if(httpMethod == "GET")
-                response = HandleGet(request, status);
+                response = handleGet(request, status);
 
             if(httpMethod == "POST"){
-                response = HandlePost(jsonBody, request, status, httpVersion, client, stream);
+                response = handlePost(jsonBody, request, status, httpVersion, client, stream);
                 if(response == null)
                     return;
             }
 
             if(httpMethod == "DELETE")
-                response = HandleDelete(jsonBody, request, status);
+                response = handleDelete(jsonBody, request, status);
 
             if(httpMethod == "PUT")
-                response = HandlePut(jsonBody, request, status);
+                response = handlePut(jsonBody, request, status);
 
             if(httpMethod == "PATCH")
-                response = HandlePatch(jsonBody, request, status);
+                response = handlePatch(jsonBody, request, status);
 
             byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {response.Split('~')[0]} {handleResponseStatus(response.Split('~')[0])}\r\nContent-Length: {response.Length}\r\n\r\n{response.Split('~')[1]}");
             stream.Write(responseBuffer, 0, responseBuffer.Length); // Startet bei der Position 0 des Buffers und sendet die volle Länge des Buffers.
@@ -70,13 +73,13 @@ namespace mtcg{
             client.Close();
         }
 
-        private string HandleGet(string request, Status response){
+        private string handleGet(string request, Status response){
             if(request == "showScoreboard")
                 response = this.showScoreboard();
 
             return $"{response.statusCode}~{response.message}";
         }
-        private string HandlePost(string? jsonBody, string request, Status response, string httpVersion, TcpClient client, NetworkStream? stream) {
+        private string handlePost(string? jsonBody, string request, Status response, string httpVersion, TcpClient client, NetworkStream? stream) {
             if(string.IsNullOrWhiteSpace(jsonBody))
                 return "400~No JSON body provided.";
 
@@ -102,7 +105,7 @@ namespace mtcg{
             return $"{response.statusCode}~{response.message}";
         }
 
-        private string HandleDelete(string? jsonBody, string request, Status response){
+        private string handleDelete(string? jsonBody, string request, Status response){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
                 return "400~No JSON body provided.";
 
@@ -115,7 +118,7 @@ namespace mtcg{
             return $"{response.statusCode}~{response.message}";
         }
 
-        private string HandlePut(string? jsonBody, string request, Status response){
+        private string handlePut(string? jsonBody, string request, Status response){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
                 return "400~No JSON body provided.";
 
@@ -125,7 +128,7 @@ namespace mtcg{
             return $"{response.statusCode}~{response.message}";
         }
 
-        private string HandlePatch(string? jsonBody, string request, Status response){
+        private string handlePatch(string? jsonBody, string request, Status response){
             if(string.IsNullOrWhiteSpace(jsonBody)) 
                 return "400~No JSON body provided.";
 
@@ -259,7 +262,10 @@ namespace mtcg{
             player1.client = client;
             player1.stream = stream;
             player1.httpVersion = httpVersion;
-            battleQueue.Add(player1);
+            lock(battleQueueLock){
+                battleQueue.Add(player1);
+            }
+            
             Console.WriteLine($"Added player \"{player1.username}\" to battlequeue.");
             
             User player2 = findOpponent(player1);
@@ -275,13 +281,16 @@ namespace mtcg{
         }
 
         private User? findOpponent(User player1){
-            foreach(var player2 in battleQueue){
-                if(player2.token != player1.token && player2.searchingBattle){
-                    battleQueue.Remove(player1);
-                    battleQueue.Remove(player2);
-                    return player2;
+            lock(battleQueueLock){
+                foreach(var player2 in battleQueue){
+                    if(player2.token != player1.token && player2.searchingBattle){
+                        battleQueue.Remove(player1);
+                        battleQueue.Remove(player2);
+                        return player2;
+                    }
                 }
             }
+            
             return null;
         }
 
@@ -310,11 +319,13 @@ namespace mtcg{
         }
 
         private void removePlayerFromBattlequeue(string token){
-            for(int i = 0; i < battleQueue.Count; i++) {
-                if(token == battleQueue[i].token && battleQueue[i].searchingBattle == true){
-                    battleQueue[i].closeConnectionToServer();
-                    battleQueue.Remove(battleQueue[i]);
-                    break;
+            lock(battleQueueLock){ 
+                for(int i = 0; i < battleQueue.Count; i++){
+                    if(token == battleQueue[i].token && battleQueue[i].searchingBattle == true){
+                        battleQueue[i].closeConnectionToServer();
+                        battleQueue.Remove(battleQueue[i]);
+                        break;
+                    }
                 }
             }
         }
