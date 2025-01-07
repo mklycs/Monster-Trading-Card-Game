@@ -30,11 +30,10 @@ namespace mtcg{
             this.deck = new List<A_Card>(4);
         }
 
-        public void sendServerBattleResponse(string response){
-            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} 200 OK\r\nContent-Length: {response.Length}\r\n\r\n{response}");
-            stream.Write(responseBuffer, 0, responseBuffer.Length);
-            stream.Close();
-            client.Close();
+        public async Task sendServerBattleResponse(string message) {
+            string response = $"{httpVersion} 200 OK\r\nContent-Length: {message.Length}\r\n\r\n{message}";
+            byte[] responseBuffer = Encoding.UTF8.GetBytes(response);
+            await stream.WriteAsync(responseBuffer, 0, responseBuffer.Length); // Asynchrone Antwort senden
         }
 
         public void closeConnectionToServer(){

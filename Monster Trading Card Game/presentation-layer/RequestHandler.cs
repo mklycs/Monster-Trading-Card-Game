@@ -84,9 +84,7 @@ namespace mtcg{
                 response = this.buyPackage(jsonBody);
 
             if(request == "battle"){
-                response = this.battle(jsonBody, httpVersion, client, stream);
-                if(response == null)
-                    return null;
+                this.battle(jsonBody, httpVersion, client, stream);
             }else if(request == "stopBattlesearch"){
                 response = this.stopBattlesearch(jsonBody);
                 if(response == null)
@@ -193,7 +191,7 @@ namespace mtcg{
             return cardController.buyPackage(authToken, random);
         }
 
-        private Status offerCard(string jsonBody) {
+        private Status offerCard(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
 
             {
@@ -208,7 +206,7 @@ namespace mtcg{
             return cardController.offerCard(authToken, offerCardID, requestCardID);
         }
 
-        private Status deleteOffer(string jsonBody) {
+        private Status deleteOffer(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
 
             {
@@ -222,7 +220,7 @@ namespace mtcg{
             return cardController.deleteOffer(authToken, tradeID);
         }
 
-        private Status tradeCards(string jsonBody) {
+        private Status tradeCards(string jsonBody){
             string authToken = getElementFromJson(jsonBody, "authToken");
 
             {
@@ -236,42 +234,53 @@ namespace mtcg{
             return cardController.tradeCards(authToken, tradeID);
         }
 
-        private Status battle(string jsonBody, string httpVersion, TcpClient client, NetworkStream? stream){
+        private async Task battle(string jsonBody, string httpVersion, TcpClient client, NetworkStream stream){
             string authToken = getElementFromJson(jsonBody, "authToken");
             UserController userController = new UserController();
-            if(!userController.checkifLoggedIn(authToken))
-                return new Status(401, "You need to be logged in.");
+            if(!userController.checkifLoggedIn(authToken)){
+                await sendResponseAsync(stream, httpVersion, "401", "You need to be logged in.");
+                return;
+            }
 
-            if(isinQueue(authToken))
-                return new Status(400, "You are already in battlequeue.");
+            if(isinQueue(authToken)){
+                await sendResponseAsync(stream, httpVersion, "400", "You are already in battlequeue.");
+                return;
+            }
 
             User player1 = userController.getUser(authToken);
             DeckDto deckDto = JsonSerializer.Deserialize<DeckDto>(jsonBody);
             CardController cardcontroller = new CardController();
 
-            if(!cardcontroller.getDeck(authToken, deckDto, player1))
-                return new Status(400, "Please define a deck before battling.");
+            if(!cardcontroller.getDeck(authToken, deckDto, player1)){
+                await sendResponseAsync(stream, httpVersion, "400", "Please define a deck before battling.");
+                return;
+            }
 
             player1.searchingBattle = true;
             player1.client = client;
             player1.stream = stream;
             player1.httpVersion = httpVersion;
+
             lock(battleQueueLock){
                 battleQueue.Add(player1);
             }
-            
+
             Console.WriteLine($"Added player \"{player1.username}\" to battlequeue.");
-            
+
             User player2 = findOpponent(player1);
             if(player2 != null){
                 BattleController battleController = new BattleController();
-                battleController.battle(player1, player2, random);
-                return null; 
+                await battleController.battle(player1, player2, random);
+                return;
             }
-            string response = "200~Still searching...";
-            byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} {"200"} {"OK"}\r\nContent-Length: {"Still searching...".Length}\r\n\r\n{"Still searching..."}");
-            stream.Write(responseBuffer, 0, responseBuffer.Length);
-            return null; /* new Status(202, "Still searching..."); */
+
+            await sendResponseAsync(stream, httpVersion, "200", "Still searching...");
+        }
+
+        private async Task sendResponseAsync(NetworkStream stream, string httpVersion, string statusCode, string message){
+            string response = $"{httpVersion} {statusCode} {handleResponseStatus(statusCode)}\r\nContent-Length: {message.Length}\r\n\r\n{message}";
+            byte[] responseBuffer = Encoding.UTF8.GetBytes(response);
+            await stream.WriteAsync(responseBuffer, 0, responseBuffer.Length);
         }
 
         private User? findOpponent(User player1){

@@ -2,7 +2,7 @@
     internal class BattleController{
         public BattleController(){}
 
-        public void battle(User player1, User player2, Random random){
+        public async Task battle(User player1, User player2, Random random){
             string response = $"{player1.username} vs {player2.username}\n";
             BattleService battleService = new BattleService();
             response += battleService.displayDecks(player1.deck, player2.deck, player1.username, player2.username);
