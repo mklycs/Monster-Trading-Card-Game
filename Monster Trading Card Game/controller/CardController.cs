@@ -102,5 +102,36 @@
 
             return new Status(200, "Successfully traded cards.");
         }
+
+        public Status gamble(string token, Random random, int coins, string headortails){
+            CardQueries cardQueries = new CardQueries();
+            int userID = cardQueries.getUserID(token);
+            int userCoins = cardQueries.getCoins(userID);
+
+            if(coins < 1)
+                return new Status(400, "Invalid coins amount.");
+
+            if(userCoins < 1)
+                return new Status(400, "Not enough coins to gamble.");
+
+            if(headortails != "1" && headortails != "2")
+                return new Status(400, "Invalid bet.");
+
+            double result = random.NextDouble();
+            int head = 0;
+            
+            if(result >= 0.7 && result <= 0.8)
+                head = 1;
+
+            if(int.Parse(headortails) == head){
+                if(!cardQueries.setCoins(userID, userCoins + coins))
+                    return new Status(400, "Something went wrong with coin transaction.");
+                return new Status(200, $"You win {coins} coins!");
+            }else{
+                if(!cardQueries.setCoins(userID, userCoins - coins))
+                    return new Status(400, "Something went wrong with coin transaction.");
+                return new Status(200, $"You loose {coins} coins.");
+            }
+        }
     }
 }

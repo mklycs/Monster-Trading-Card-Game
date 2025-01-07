@@ -83,6 +83,9 @@ namespace mtcg{
             if(request == "buyPackage")
                 response = this.buyPackage(jsonBody);
 
+            if(request == "gamble")
+                response = this.gamble(jsonBody);
+
             if(request == "battle"){
                 this.battle(jsonBody, httpVersion, client, stream);
             }else if(request == "stopBattlesearch"){
@@ -189,6 +192,22 @@ namespace mtcg{
 
             CardController cardController = new CardController();
             return cardController.buyPackage(authToken, random);
+        }
+
+        private Status gamble(string jsonBody) {
+            string authToken = getElementFromJson(jsonBody, "authToken");
+
+            {
+                UserController userController = new UserController();
+                if(!userController.checkifLoggedIn(authToken))
+                    return new Status(401, "You need to be logged in.");
+            }
+            
+            int coins = int.Parse(getElementFromJson(jsonBody, "coins"));
+            string headortails = getElementFromJson(jsonBody, "headortails");
+
+            CardController cardController = new CardController();
+            return cardController.gamble(authToken, random, coins, headortails);
         }
 
         private Status offerCard(string jsonBody){
