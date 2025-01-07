@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.Metrics;
-using System.Drawing;
-using System.Security.Cryptography.X509Certificates;
-using Npgsql;
+﻿using Npgsql;
 
 namespace mtcg{
     internal class UserQueries : Database{

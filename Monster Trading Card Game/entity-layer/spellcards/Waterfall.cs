@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Waterfall : A_Card{
         public Waterfall(){
             this.id = 10;

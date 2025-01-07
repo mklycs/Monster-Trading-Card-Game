@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     public abstract class A_Card{
         public int id { get; set; }
         public string? name { get; set; }

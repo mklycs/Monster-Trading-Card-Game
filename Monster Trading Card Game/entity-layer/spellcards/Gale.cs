@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Gale : A_Card{
         public Gale(){
             this.id = 9;

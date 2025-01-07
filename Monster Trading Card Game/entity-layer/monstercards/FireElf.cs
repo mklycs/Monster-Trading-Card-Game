@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class FireElf : A_Card{
         public FireElf(){
             this.id = 2;

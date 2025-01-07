@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data;
-using Npgsql;
+﻿using Npgsql;
 
 namespace mtcg{
     internal class Database{

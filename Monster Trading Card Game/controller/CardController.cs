@@ -1,9 +1,4 @@
-﻿// verwaltet Anfragen zum Erwerb von Karten oder zum Verwalten des Decks
-
-using System;
-using System.Numerics;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class CardController{
         public CardController(){ }
         

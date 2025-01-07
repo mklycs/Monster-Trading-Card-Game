@@ -1,9 +1,4 @@
-﻿// startet Kämpfe zwischen Benutzern und gibt die Ergebnisse zurück
-
-using System;
-using System.Numerics;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class BattleController{
         public BattleController(){}
 

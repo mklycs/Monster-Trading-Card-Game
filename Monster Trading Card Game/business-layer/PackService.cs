@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class PackService{
 
         public int cost { get; set; } = 5;

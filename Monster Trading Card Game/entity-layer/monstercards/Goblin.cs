@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Goblin : A_Card{
         public Goblin(){
             this.id = 3;

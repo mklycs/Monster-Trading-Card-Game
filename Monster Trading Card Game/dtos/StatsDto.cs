@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class StatsDto{
         public int? coins { get; set; }
         public int? wins { get; set; }

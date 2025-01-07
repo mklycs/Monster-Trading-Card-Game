@@ -1,9 +1,4 @@
-﻿// enthält die Logik für den Kampf, die Kampfauswertung und Battle-Log
-
-using System;
-using System.Collections.Generic;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class BattleService{
         public BattleService() { }
         

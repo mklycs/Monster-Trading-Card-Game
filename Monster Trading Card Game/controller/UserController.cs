@@ -1,12 +1,5 @@
-﻿// nimmt Anfragen zur Registrierung, Login und anderen Benutzeraktionen entgegen
-
-using System;
-using System.Drawing;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using Npgsql;
-using Npgsql.Replication;
-//using Npgsql.Replication;
 
 namespace mtcg{
     internal class UserController{
@@ -115,15 +108,16 @@ namespace mtcg{
         }
 
         private static string generateRandomString(int len){
-            Random random = new Random();                                     // sollte nicht hier sein, aber fürs erste reicht das aus, wenns hier ist
+            Random random = new Random();
             int num = 0;
             string random_string = "";
             char charac;
             for(int i = 0; i < len; i++){
-                num = random.Next(65, 91);                                    // ASCII Kleinbuchstaben fangen bei 65 und Großbuchstaben fangen bei 97 an 
+                num = random.Next(65, 91);
                 if(random.Next(0, 2) == 1) 
-                    charac = Convert.ToChar(num + 32); // für upper case
-                else charac = Convert.ToChar(num);                            // für lower case
+                    charac = Convert.ToChar(num + 32);
+                else 
+                    charac = Convert.ToChar(num);
                 random_string += charac;
             }
             return random_string;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
-using Npgsql;
+﻿using Npgsql;
 
 namespace mtcg{
     internal class CardQueries : Database{

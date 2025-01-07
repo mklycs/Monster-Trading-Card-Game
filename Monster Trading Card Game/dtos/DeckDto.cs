@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class DeckDto{
         public int card1 { get; set; }
         public int card2 { get; set; }

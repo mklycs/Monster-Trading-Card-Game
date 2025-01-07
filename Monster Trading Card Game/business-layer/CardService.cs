@@ -1,9 +1,4 @@
-﻿// Schnittstelle für Kartenoperationen, wie das Verwalten von Decks, Hinzufügen/Entfernen von Karten
-
-using System;
-using System.Reflection;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class CardService{
         public CardService(){}
 

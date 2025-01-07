@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Dragon : A_Card{
         public Dragon(){
             this.id = 1;

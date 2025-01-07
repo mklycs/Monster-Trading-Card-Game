@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Kraken : A_Card{
         public Kraken(){
             this.id = 5;

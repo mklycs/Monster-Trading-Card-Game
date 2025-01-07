@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Wizard : A_Card{
         public Wizard(){
             this.id = 7;

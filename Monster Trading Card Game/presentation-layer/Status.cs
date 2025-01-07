@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Status{
         public int statusCode { get; set; }
         public string message { get; set; }

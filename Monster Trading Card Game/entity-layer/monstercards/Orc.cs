@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mtcg{
+﻿namespace mtcg{
     internal class Orc : A_Card{
         public Orc(){
             this.id = 6;
