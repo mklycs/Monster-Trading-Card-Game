@@ -204,7 +204,7 @@ namespace mtcg{
             }
             
             int coins = int.Parse(getElementFromJson(jsonBody, "coins"));
-            string headortails = getElementFromJson(jsonBody, "headortails");
+            int headortails = int.Parse(getElementFromJson(jsonBody, "headortails"));
 
             CardController cardController = new CardController();
             return cardController.gamble(authToken, random, coins, headortails);
