@@ -1,4 +1,6 @@
-﻿using System.Net.Sockets;
+﻿using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace mtcg{
@@ -30,10 +32,16 @@ namespace mtcg{
             this.deck = new List<A_Card>(4);
         }
 
-        public async Task sendServerBattleResponse(string message) {
-            string response = $"{httpVersion} 200 OK\r\nContent-Length: {message.Length}\r\n\r\n{message}";
-            byte[] responseBuffer = Encoding.UTF8.GetBytes(response);
-            await stream.WriteAsync(responseBuffer, 0, responseBuffer.Length); // Asynchrone Antwort senden
+        public void sendServerBattleResponse(string response){
+            try{
+                byte[] responseBuffer = Encoding.UTF8.GetBytes($"{httpVersion} 200 OK\r\nContent-Length: {response.Length}\r\n\r\n{response}");
+                stream.Write(responseBuffer, 0, responseBuffer.Length);
+                stream.Close();
+                client.Close();
+                Console.WriteLine($"Sent battle result: ({responseBuffer.Length})");
+            }catch(Exception ex){
+               Console.WriteLine($"Failed to write: {ex.Message}");
+            }
         }
 
         public void closeConnectionToServer(){
