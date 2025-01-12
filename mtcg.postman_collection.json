@@ -1,0 +1,364 @@
+{
+	"info": {
+		"_postman_id": "8686f046-b6f3-45cd-8092-47a4e17354a5",
+		"name": "mtcg",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38932017"
+	},
+	"item": [
+		{
+			"name": "localhost:8080/showScoreboard",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/showScoreboard",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"showScoreboard"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test\",\n    \"password\": \"Test123!\",\n    \"password_repeat\": \"Test123!\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/signup",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/changeCredentials",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test\",\n    \"new_username\": \"Norbert\",\n    \"password\": \"Test123!\",\n    \"password_repeat\": \"Test123!\",\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\" // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/changeCredentials",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"changeCredentials"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/deleteUser",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"Norbert\",\n    \"password\": \"Test123!\",\n    \"password_repeat\": \"Test123!\",\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\" // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/deleteUser",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deleteUser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/logout",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\" // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/logout",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/login",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"Norbert\",\n    \"password\": \"Test123!\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/buyPackage",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\" // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/buyPackage",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"buyPackage"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/battle",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\", // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n    \"card1\": 1,\r\n    \"card2\": 2,\r\n    \"card3\": 3,\r\n    \"card4\": 4\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/battle",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"battle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/stopBattlesearch",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\" // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/stopBattlesearch",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"stopBattlesearch"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "locathost:8080/offerCard",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\", // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n    \"offerCardID\": \"1\",\r\n    \"requestCardID\": \"2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/offerCard",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"offerCard"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/deleteOffer",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\", // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n    \"tradeID\": \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/deleteOffer",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deleteOffer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/tradeCards",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\", // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n    \"tradeID\": \"2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/tradeCards",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tradeCards"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/gamble",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"authToken\": \"eea1388b263555e09f807823afeb93ac36027e42331246a56a17b99208d5956a\", // Token von der Sitzung (der gegebene wird jetzt wohl nicht passen)\r\n    \"coins\": \"10\",\r\n    \"headortails\": \"0\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/gamble",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"gamble"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

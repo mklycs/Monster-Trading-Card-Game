@@ -1,5 +1,5 @@
 ﻿namespace mtcg{
-    internal class UserDto{
+    public class UserDto{
         public string? username { get; set; }
         public string? new_username { get; set; }
         public string? password { get; set; }

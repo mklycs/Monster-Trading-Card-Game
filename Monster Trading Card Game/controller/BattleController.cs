@@ -36,20 +36,20 @@
             player2.sendServerBattleResponse(response);
         }
 
-        private void processWin(User player){
+        internal void processWin(User player){
             player.wins += 1;
             player.elo += 3;
             player.coins += 4;
             player.rating = (((float)player.wins / (player.wins + player.looses)) * 100);
         }
 
-        private void processLoose(User player){
+        internal void processLoose(User player){
             player.looses += 1;
             player.elo -= 5;
             player.rating = (((float)player.wins / (player.wins + player.looses)) * 100);
         }
 
-        private void processDraw(User player){
+        internal void processDraw(User player){
             player.elo += 1;
             player.coins += 1;
         }

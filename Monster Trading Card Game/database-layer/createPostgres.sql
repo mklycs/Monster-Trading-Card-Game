@@ -41,8 +41,8 @@ CREATE TABLE "TRADEOFFERS"(
 );
 
 INSERT INTO "USERS" (username, password, token, admin) VALUES
-('dupa', '54de7f606f2523cba8efac173fab42fb7f59d56ceff974c8fdb7342cf2cfe345', '-', 0),
-('cycki', '54de7f606f2523cba8efac173fab42fb7f59d56ceff974c8fdb7342cf2cfe345', '-', 1);
+('alfred', '54de7f606f2523cba8efac173fab42fb7f59d56ceff974c8fdb7342cf2cfe345', '-', 0),
+('ferris', '54de7f606f2523cba8efac173fab42fb7f59d56ceff974c8fdb7342cf2cfe345', '-', 1);
 
 INSERT INTO "STATS" (coins, wins, looses, elo, rating) VALUES
 (20, 0, 0, 100, 0.00),

@@ -49,7 +49,7 @@ namespace mtcg{
             if(userQueries.setToken(userDto.username, token)) 
                 return new Status(200, "Login succesful.");
 
-            return new Status(500, "Login failed.");
+            return new Status(400, "Login failed.");
         }
 
         public Status logout(string token){

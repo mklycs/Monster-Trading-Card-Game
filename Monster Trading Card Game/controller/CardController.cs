@@ -125,11 +125,11 @@
             if(result >= 0.7 && result <= 0.8)
                 head = headortails;
 
-            if(headortails == head) {
+            if(headortails == head){
                 if(!cardQueries.setCoins(userID, userCoins + coins))
                     return new Status(400, "Something went wrong with coin transaction.");
                 return new Status(200, $"You win {coins} coins!");
-            } else {
+            }else{
                 if(!cardQueries.setCoins(userID, userCoins - coins))
                     return new Status(400, "Something went wrong with coin transaction.");
                 return new Status(200, $"You loose {coins} coins.");

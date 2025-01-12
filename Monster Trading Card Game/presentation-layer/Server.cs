@@ -18,13 +18,13 @@ namespace mtcg{
             Console.WriteLine("Server started, listening on port 8080...");
 
             while(true){
-                TcpClient client = listener.AcceptTcpClient();
-                Task.Run(() => handleClient(client));
+                Task.Run(() => handleClient(listener));
             }
         }
 
-        private void handleClient(TcpClient client){
-            /* using */ NetworkStream? stream = client.GetStream();
+        private void handleClient(TcpListener listener){
+            TcpClient client = listener.AcceptTcpClient();
+            NetworkStream? stream = client.GetStream();
 
             byte[] buffer = new byte[client.ReceiveBufferSize];
             int bytesRead = stream.Read(buffer, 0, buffer.Length);

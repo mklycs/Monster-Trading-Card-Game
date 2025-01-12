@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using System.Security.Principal;
+using Npgsql;
 
 namespace mtcg{
     internal class CardQueries : Database{
@@ -6,6 +7,13 @@ namespace mtcg{
         public CardQueries(){
             this.conn = this.getConn();
             conn.Open();
+        }
+
+        public CardQueries(NpgsqlConnection conn){
+            this.conn = conn;
+
+            if(this.conn.State != System.Data.ConnectionState.Open)
+                conn.Open();
         }
 
         public int getUserID(string token){
@@ -78,17 +86,17 @@ namespace mtcg{
         }
 
         public bool checkifCardInStack(int cardID, int userID){
-            int count = 0;
+            int stackCount = 0;
             using(var command = new NpgsqlCommand("SELECT COUNT(cardid) FROM \"STACKS\" WHERE userid = @userID AND cardid = @cardID;", conn)){
                 command.Parameters.AddWithValue("userID", userID);
                 command.Parameters.AddWithValue("cardID", cardID);
                 using(var reader = command.ExecuteReader()){
                     while(reader.Read())
-                        count = reader.GetInt32(0);
+                        stackCount = reader.GetInt32(0);
                 }
             }
 
-            if(count < 1)
+            if(stackCount < 1)
                 return false;
 
             return true;
